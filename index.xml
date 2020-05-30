@@ -1,0 +1,50 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+      <title>Dmitriy Novikov on Dmitriy Novikov </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
+    <link>https://dm-novikov.github.io/blog/</link>
+    
+    
+    
+    <updated>Sat, 30 May 2020 15:00:13 MSK</updated>
+    
+    <item>
+      <title>ClickHouse, range() и геймдев</title>
+      <link>https://dm-novikov.github.io/blog/post/range_clickhouse/</link>
+      <pubDate>Sat, 30 May 2020 15:00:13 MSK</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/range_clickhouse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Первый пост</title>
+      <link>https://dm-novikov.github.io/blog/post/first/</link>
+      <pubDate>Sat, 30 May 2020 14:58:44 MSK</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/first/</guid>
+      <description>Мой первый пост ¯_(ツ)_/¯</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://dm-novikov.github.io/blog/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 UTC</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/about/</guid>
+      <description>Коротко обо мне Добро пожаловать на мой личный сайт, я Дмитрий.
+Занимаюсь всем что связано с данными, от получения до конечного продукта на их основе. На текущий момент погружен в первую очередь в техническую часть работы с данными, то что сейчас называют Data Engineer/ETL. За время трудовой деятельности, удалось поработать в области маркетинга, продуктовой аналитики и игр. Я очень много времени уделяю самообразованию, не только техническим наукам, но также стараюсь изучать языки и весьма увлечен японской культурой и комиксами.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://dm-novikov.github.io/blog/contact/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 UTC</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/contact/</guid>
+      <description>Мои контакты  Facebook Stepic LinkedIn Email - nov.dm.konst@outlook.com  </description>
+    </item>
+    
+  </channel>
+</rss>
+

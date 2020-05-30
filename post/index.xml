@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Dmitriy Novikov</title>
+    <link>https://dm-novikov.github.io/blog/post/</link>
+    <description>Recent content in Posts on Dmitriy Novikov</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sat, 30 May 2020 15:00:13 +0300</lastBuildDate>
+    
+	<atom:link href="https://dm-novikov.github.io/blog/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>ClickHouse, range() и геймдев</title>
+      <link>https://dm-novikov.github.io/blog/post/range_clickhouse/</link>
+      <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/range_clickhouse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Первый пост</title>
+      <link>https://dm-novikov.github.io/blog/post/first/</link>
+      <pubDate>Sat, 30 May 2020 14:58:44 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/first/</guid>
+      <description>Мой первый пост ¯_(ツ)_/¯</description>
+    </item>
+    
+  </channel>
+</rss>
