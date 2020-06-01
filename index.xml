@@ -6,10 +6,19 @@
     
     
     
-    <updated>Sat, 30 May 2020 15:00:13 MSK</updated>
+    <updated>Tue, 02 Jun 2020 00:37:55 MSK</updated>
     
     <item>
-      <title>ClickHouse, range() и геймдев</title>
+      <title>Связь интеграла и производной</title>
+      <link>https://dm-novikov.github.io/blog/post/integral/</link>
+      <pubDate>Tue, 02 Jun 2020 00:37:55 MSK</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/integral/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ClickHouse, range и регрессия</title>
       <link>https://dm-novikov.github.io/blog/post/range_clickhouse/</link>
       <pubDate>Sat, 30 May 2020 15:00:13 MSK</pubDate>
       
@@ -42,7 +51,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 UTC</pubDate>
       
       <guid>https://dm-novikov.github.io/blog/contact/</guid>
-      <description>Мои контакты  Facebook Stepic LinkedIn Email - nov.dm.konst@outlook.com  </description>
+      <description>Мои контакты  Facebook Stepic LinkedIn nov.dm.konst@outlook.com  </description>
     </item>
     
   </channel>
