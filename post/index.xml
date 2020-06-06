@@ -29,14 +29,5 @@ select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] select arrayJoin(range(10
       <description>Мой первый пост ¯_(ツ)_/¯</description>
     </item>
     
-    <item>
-      <title>First</title>
-      <link>https://dm-novikov.github.io/blog/post/first.en/</link>
-      <pubDate>Sat, 30 May 2020 00:41:58 +0300</pubDate>
-      
-      <guid>https://dm-novikov.github.io/blog/post/first.en/</guid>
-      <description>My first post ¯_(ツ)_/¯</description>
-    </item>
-    
   </channel>
 </rss>
