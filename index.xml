@@ -6,16 +6,7 @@
     
     
     
-    <updated>Tue, 02 Jun 2020 00:37:55 MSK</updated>
-    
-    <item>
-      <title>Связь интеграла и производной</title>
-      <link>https://dm-novikov.github.io/blog/post/integral/</link>
-      <pubDate>Tue, 02 Jun 2020 00:37:55 MSK</pubDate>
-      
-      <guid>https://dm-novikov.github.io/blog/post/integral/</guid>
-      <description></description>
-    </item>
+    <updated>Sat, 30 May 2020 15:00:13 MSK</updated>
     
     <item>
       <title>ClickHouse, range и регрессия</title>
@@ -23,8 +14,8 @@
       <pubDate>Sat, 30 May 2020 15:00:13 MSK</pubDate>
       
       <guid>https://dm-novikov.github.io/blog/post/range_clickhouse/</guid>
-      <description>Что за range(?) В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве.
-select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья.</description>
+      <description>Что за range(?) В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья arrayJoin(range()).
+select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] select arrayJoin(range(10)) | arrayJoin\(range\(10\)\) | | :--- | | 0 | | 1 | | 2 | | 3 | | 4 | | 5 | | 6 | | 7 | | 8 | | 9 | Применение 1 Генерация новых значений для сломанной воронки Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое.</description>
     </item>
     
     <item>
@@ -34,6 +25,15 @@ select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] А функция arrayJo
       
       <guid>https://dm-novikov.github.io/blog/post/first/</guid>
       <description>Мой первый пост ¯_(ツ)_/¯</description>
+    </item>
+    
+    <item>
+      <title>First</title>
+      <link>https://dm-novikov.github.io/blog/post/first.en/</link>
+      <pubDate>Sat, 30 May 2020 00:41:58 MSK</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/first.en/</guid>
+      <description>My first post ¯_(ツ)_/¯</description>
     </item>
     
     <item>
