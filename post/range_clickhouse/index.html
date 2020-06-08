@@ -91,8 +91,8 @@
 </code></pre></div><p>Одно очевидное наблюдение, у нас всегда есть последнее событие юзера, и так как мы знаем что воронка не возрастает, то можно ориентироваться на это событие как на конечное, и все что нам останется, это сгенерировать недостающие шаги воронки, вот тут то нам и поможет range + arrayJoin.</p>
 <p><strong>Итак по шагам:</strong></p>
 <p>Шаг 1: Создадим необходимую последовательность из шагов которые мы хотим увидеть</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> EVENTS,
-       events_index
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name,
+       step
 <span style="color:#66d9ef">FROM</span>
   (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
           tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> name,
@@ -166,18 +166,10 @@
 <p>Не будем обсуждать этот метод, его точность и вот это все. А просто возьмем и сделаем наш супер прогноз.</p>
 <p>Генерация датасета</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
-       tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+       toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
        tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
-<span style="color:#66d9ef">FROM</span>(
-<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>,
-                   <span style="color:#ae81ff">1</span>,
-                   <span style="color:#ae81ff">10</span>),(<span style="color:#e6db74">&#39;cohort 1&#39;</span>,
-                        <span style="color:#ae81ff">2</span>,
-                        <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>,
-                               <span style="color:#ae81ff">3</span>,
-                               <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>,
-                                      <span style="color:#ae81ff">4</span>,
-                                      <span style="color:#ae81ff">300</span>),
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)
 
 <span style="color:#f92672">|</span> cohort <span style="color:#f92672">|</span> <span style="color:#66d9ef">day</span> <span style="color:#f92672">|</span> value <span style="color:#f92672">|</span>
 <span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- | :--- |
