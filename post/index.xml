@@ -5,10 +5,22 @@
     <link>https://dm-novikov.github.io/blog/post/</link>
     <description>Recent content in Posts on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sat, 30 May 2020 15:00:13 +0300</lastBuildDate>
+    <lastBuildDate>Fri, 12 Jun 2020 16:41:22 +0300</lastBuildDate>
     
 	<atom:link href="https://dm-novikov.github.io/blog/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Как обмануть Logs API</title>
+      <link>https://dm-novikov.github.io/blog/post/metrica_clickhouse/</link>
+      <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/metrica_clickhouse/</guid>
+      <description>Делаем работу дважды Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде array.
+Вот что по этому поводу сказала поддержка
+ На самом деле параметры будут парситься от самого &amp;ldquo;нижнего&amp;rdquo; уровня до самого &amp;ldquo;верхнего&amp;rdquo;. По этой причине, значения на уровнях Выше могут дублироваться по отношению к более &amp;ldquo;нижним&amp;rdquo; уровням.
+  Можно взять следующий пример: { &amp;ldquo;Key1_1&amp;rdquo;: { &amp;ldquo;Key2_1&amp;rdquo;: [ &amp;ldquo;Key3_11&amp;rdquo;, &amp;ldquo;Key3_12&amp;rdquo; ], &amp;ldquo;Key2_2&amp;rdquo;: [ &amp;ldquo;Key3_21&amp;rdquo;, &amp;ldquo;Key3_22&amp;rdquo; ] }, ​​​​ &amp;ldquo;Key1_2&amp;rdquo;: &amp;ldquo;Key2_3&amp;quot;​​​ }</description>
+    </item>
     
     <item>
       <title>ClickHouse, range и регрессия</title>

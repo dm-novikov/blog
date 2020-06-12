@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Как обмануть Logs API - Dmitriy Novikov</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="keywords" content="">
+  <link rel="canonical" href="https://dm-novikov.github.io/blog/post/metrica_clickhouse/">
+
+  
+  
+
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" type="text/css" href="https://dm-novikov.github.io/blog/css/combined-min.css">
+  
+
+</head>
+<body class="">
+
+<div class="site-wrap">
+  <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://dm-novikov.github.io/blog" class="site-title">Dmitriy Novikov</a>
+      <nav class="site-nav right">
+      <a href="https://dm-novikov.github.io/blog/about/">Обо мне</a>
+<a href="https://dm-novikov.github.io/blog/tags/"></a>
+<a href="https://dm-novikov.github.io/blog/contact/">Контакты</a>
+</form>
+
+      </nav>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</header>
+
+  <div class="post p2 p-responsive wrap" role="main">
+    <div class="measure">
+      <div class="post-header mb2">
+        <h1 class="py2">Как обмануть Logs API</h1>
+        <span class="post-meta">Jun 12, 2020 </span><br>
+        
+      </div>
+
+      <article class="post-content">
+      <h3 id="делаем-работу-дважды">Делаем работу дважды</h3>
+<p>Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде <em>array</em>.</p>
+<p>Вот что по этому поводу сказала поддержка</p>
+<blockquote>
+<p>На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.</p>
+</blockquote>
+<blockquote>
+<p>Можно взять следующий пример:
+{
+&ldquo;Key1_1&rdquo;: {
+&ldquo;Key2_1&rdquo;: [
+&ldquo;Key3_11&rdquo;,
+&ldquo;Key3_12&rdquo;
+],
+&ldquo;Key2_2&rdquo;: [
+&ldquo;Key3_21&rdquo;,
+&ldquo;Key3_22&rdquo;
+]
+},
+​​​​ &ldquo;Key1_2&rdquo;: &ldquo;Key2_3&quot;​​​
+}</p>
+</blockquote>
+<blockquote>
+<p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
+<ol>
+<li>&ldquo;ym:pv:parsedParamsKey1&rdquo; - [&ldquo;Key1_1&rdquo;,&ldquo;Key1_1&rdquo;,&ldquo;Key1_1&rdquo;,&ldquo;Key1_1&rdquo;,&ldquo;Key1_2&rdquo;]</li>
+<li>&ldquo;ym:pv:parsedParamsKey2&rdquo; - [&ldquo;Key2_1&rdquo;,&ldquo;Key2_1&rdquo;,&ldquo;Key2_2&rdquo;,&ldquo;Key2_2&rdquo;,&ldquo;Key2_3&rdquo;]</li>
+<li>&ldquo;ym:pv:parsedParamsKey3&rdquo; - [&ldquo;Key3_11&rdquo;,&ldquo;Key3_12&rdquo;,&ldquo;Key3_21&rdquo;,&ldquo;Key3_22&rdquo;,&quot;&quot;]</li>
+</ol>
+</blockquote>
+<p>Сложна, но давайте ради шутки просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объек, но кому и зачем это нужно)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span>
+    <span style="color:#f92672">*</span>,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey1, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params1,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey2, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params2,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey3, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params3,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey4, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params4,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey5, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params5,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey6, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params6,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey7, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params7,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey8, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params8,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey9, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params9,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey10, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params10,
+    arrayMap(x <span style="color:#f92672">-&gt;</span> x <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, range(<span style="color:#66d9ef">length</span>(params1))) <span style="color:#66d9ef">as</span> len,
+    arrayMap(x <span style="color:#f92672">-&gt;</span>  arrayFilter(y <span style="color:#f92672">-&gt;</span> y <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;&#39;</span>, x),arrayMap(x <span style="color:#f92672">-&gt;</span> array(arrayElement(params1, x),
+                        arrayElement(params2, x),
+                        arrayElement(params3, x),
+                        arrayElement(params4, x),
+                        arrayElement(params5, x),
+                        arrayElement(params6, x),
+                        arrayElement(params7, x),
+                        arrayElement(params8, x),
+                        arrayElement(params9, x),
+                        arrayElement(params10, x)), len)) <span style="color:#66d9ef">as</span> array_array,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> x[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], array_array) <span style="color:#66d9ef">as</span> value,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> arrayStringConcat(x, <span style="color:#e6db74">&#39;_&#39;</span>), arrayMap(x <span style="color:#f92672">-&gt;</span> arrayPopBack(x), array_array)) <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">key</span>,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> arrayStringConcat(x, <span style="color:#e6db74">&#39;&#34;:&#34;&#39;</span>), arrayMap(x <span style="color:#f92672">-&gt;</span> array(arrayElement(<span style="color:#66d9ef">key</span>, x), arrayElement(value, x)), len)) <span style="color:#66d9ef">as</span> tmp,
+        replaceAll(replaceOne(replaceOne(toString(tmp), <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;{&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;}&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;</span><span style="color:#e6db74">&#34;&#39;) as tmp_json,
+</span><span style="color:#e6db74">        if(tmp_json = &#39;{&#34;&#34;:&#34;&#34;}&#39;, &#39;&#39;, tmp_json) as params_json
+</span><span style="color:#e6db74">FROM #твоя таблица
+</span></code></pre></div><p>При большом желании можно теперь сделать MV чтобы не бегать каждый раз по всей таблице и не грузить сервер.</p>
+<p><em>Вопрос:</em> на..¯_(ツ)_/¯ это нужно делать?</p>
+<p><em>Ответ:</em> Why not..bro?</p>
+
+      </article>
+
+      
+
+      
+
+    </div>
+  </div>
+</div>
+ 
+
+    
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    
+
+
+</body>
+</html>
+
