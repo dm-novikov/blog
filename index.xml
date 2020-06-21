@@ -6,7 +6,17 @@
     
     
     
-    <updated>Fri, 12 Jun 2020 16:41:22 MSK</updated>
+    <updated>Sun, 21 Jun 2020 20:54:03 MSK</updated>
+    
+    <item>
+      <title>Pandas полезности</title>
+      <link>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</link>
+      <pubDate>Sun, 21 Jun 2020 20:54:03 MSK</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</guid>
+      <description>Читаем и записываем данные Когда данных больше чем твой RAM Очень полезная возможность Pandas это возможность итерироваться по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе, особенно если вы возитесь с ETL).
+data_iter = pd.read_csv(&amp;#39;cool_dataset.csv&amp;#39;, chunksize=N) def data_prep(df, func): &amp;#34;&amp;#34;&amp;#34; Отфильтруем данные и сложим в другой файлик &amp;#34;&amp;#34;&amp;#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&amp;#39;cool_dataset_prep.csv&amp;#39;) data_prep(data_iter, func_filter) Сжимай свою дату Pandas позволяет читать из запакованных данных, снижая тем самым I/O</description>
+    </item>
     
     <item>
       <title>Как обмануть Logs API</title>

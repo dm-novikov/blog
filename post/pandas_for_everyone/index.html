@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Pandas полезности - Dmitriy Novikov</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="keywords" content="">
+  <link rel="canonical" href="https://dm-novikov.github.io/blog/post/pandas_for_everyone/">
+
+  
+  
+
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" type="text/css" href="https://dm-novikov.github.io/blog/css/combined-min.css">
+  
+
+</head>
+<body class="">
+
+<div class="site-wrap">
+  <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://dm-novikov.github.io/blog" class="site-title">Dmitriy Novikov</a>
+      <nav class="site-nav right">
+      <a href="https://dm-novikov.github.io/blog/about/">Обо мне</a>
+<a href="https://dm-novikov.github.io/blog/tags/"></a>
+<a href="https://dm-novikov.github.io/blog/contact/">Контакты</a>
+</form>
+
+      </nav>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</header>
+
+  <div class="post p2 p-responsive wrap" role="main">
+    <div class="measure">
+      <div class="post-header mb2">
+        <h1 class="py2">Pandas полезности</h1>
+        <span class="post-meta">Jun 21, 2020 </span><br>
+        
+      </div>
+
+      <article class="post-content">
+      <h3 id="читаем-и-записываем-данные">Читаем и записываем данные</h3>
+<h6 id="когда-данных-больше-чем-твой-ram">Когда данных больше чем твой RAM</h6>
+<p>Очень полезная возможность Pandas это возможность итерироваться по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе, особенно если вы возитесь с ETL).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_iter <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;cool_dataset.csv&#39;</span>, chunksize<span style="color:#f92672">=</span>N)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">data_prep</span>(df, func):
+    <span style="color:#e6db74">&#34;&#34;&#34; Отфильтруем данные и сложим в другой файлик
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">for</span> chunk <span style="color:#f92672">in</span> df:
+        tmp <span style="color:#f92672">=</span> func(chunk)
+        tmp<span style="color:#f92672">.</span>to_csv(<span style="color:#e6db74">&#39;cool_dataset_prep.csv&#39;</span>)
+
+data_prep(data_iter, func_filter)
+</code></pre></div><h6 id="сжимай-свою-дату">Сжимай свою дату</h6>
+<p>Pandas позволяет читать из запакованных данных, снижая тем самым I/O</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_frame <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;your_barby_size_dataset.csv&#39;</span>, compression<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gzip&#39;</span>)
+</code></pre></div><h6 id="используй-enum-как-тип-данных">Используй enum как тип данных</h6>
+<p>Данные тип позволяет уменьшить объем данных, за счет того что будет хранить только числовые значения переменных, а текст будет лежать в хэш таблице (кстати это можно использовать когда считываешь данные из файла, параметр <em>dtype</em>, требуется передать <em>{col:type}</em>)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_frame[<span style="color:#e6db74">&#39;enum&#39;</span>]<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;category&#39;</span>)
+</code></pre></div><p>Важно, данный тип данных подходит только для столбцов с низкой вариабельностью. Иначе теряется смысл сего действия.</p>
+<h6 id="снижай-разрядность-своего-intfloat">Снижай разрядность своего int/float</h6>
+<p>По умолчанию Pandas выделяет <em>64</em> бита для хранения ваших численных данных, но если вы уверены что такие цифры вам попросту не нужны, то измените тип на 32 или 16.</p>
+<p><img src="D:/Git/blog/blog/images/pandas.png" alt="GitHub Logo"></p>
+<p><strong>Пара полезных ссылок:</strong></p>
+<ul>
+<li><a href="https://realpython.com/python-pandas-tricks/">Python Pandas: Tricks &amp; Features You May Not Know</a></li>
+<li><a href="https://www.youtube.com/watch?v=2xS_glCEuRg">Как ухаживать за пандами</a></li>
+</ul>
+<h3 id="анализ-данных-на-пандас">Анализ данных на пандас</h3>
+<h6 id="используй-временной-индекс">Используй временной индекс</h6>
+<p>Если ваши данные вам необходимо анализировать на временных промежутках, то вносите столбец под индекс, это сократит код, и позволит использовать встроенные функции для работы с временными рядами.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_frame<span style="color:#f92672">.</span>index <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>DatetimeIndex(list(data_frame[<span style="color:#e6db74">&#39;date&#39;</span>]))
+
+<span style="color:#75715e">#Для примера разобьем наш дата фрейм на 10 частей</span>
+data_frame<span style="color:#f92672">.</span>resample(<span style="color:#ae81ff">10</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;A&#39;</span>)
+
+<span style="color:#75715e"># Или построим простой график, без лишних телодвижений</span>
+data_frame<span style="color:#f92672">.</span>plot()
+</code></pre></div><h6 id="apply--map--applymap-_ツ_">Apply + Map = applymap ¯_(ツ)_/¯</h6>
+<p>Когда нужно пройтись прям по всем ячейкам, то applymap тут как нельзя кстати.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_frame<span style="color:#f92672">.</span>applymap(<span style="color:#66d9ef">lambda</span> x: int(x)<span style="color:#f92672">*</span><span style="color:#ae81ff">3.14</span>)
+</code></pre></div><h6 id="собирай-кумулятивную-сумму-без-for">Собирай кумулятивную сумму без for</h6>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_frame<span style="color:#f92672">.</span>groupby([<span style="color:#e6db74">&#39;enum&#39;</span>,<span style="color:#e6db74">&#39;values&#39;</span>])<span style="color:#f92672">.</span>sum()<span style="color:#f92672">.</span>groupby(<span style="color:#e6db74">&#39;enum&#39;</span>)<span style="color:#f92672">.</span>cumsum()
+</code></pre></div><h6 id="используем-geopandas">Используем GeoPandas</h6>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Создадим датасет для отображения</span>
+gdf <span style="color:#f92672">=</span> geopandas<span style="color:#f92672">.</span>GeoDataFrame(data_terr, geometry<span style="color:#f92672">=</span>geopandas<span style="color:#f92672">.</span>points_from_xy(data_terr<span style="color:#f92672">.</span>Longitude, data_terr<span style="color:#f92672">.</span>Latitude))
+world <span style="color:#f92672">=</span> geopandas<span style="color:#f92672">.</span>read_file(geopandas<span style="color:#f92672">.</span>datasets<span style="color:#f92672">.</span>get_path(<span style="color:#e6db74">&#39;naturalearth_lowres&#39;</span>))
+
+<span style="color:#75715e"># Нарисуем распределение на карте</span>
+ax <span style="color:#f92672">=</span> world<span style="color:#f92672">.</span>plot(color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;white&#39;</span>, edgecolor<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;black&#39;</span>, figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">20</span>,<span style="color:#ae81ff">10</span>))
+a  <span style="color:#f92672">=</span> gdf<span style="color:#f92672">.</span>plot(ax<span style="color:#f92672">=</span>ax, markersize <span style="color:#f92672">=</span> data_terr[<span style="color:#e6db74">&#39;nkill&#39;</span>] <span style="color:#f92672">/</span> <span style="color:#ae81ff">5</span>, marker<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;o&#39;</span>, color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;red&#39;</span>, cax<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;right&#39;</span>)
+</code></pre></div><p><img src="D:/Git/blog/blog/images/geopandas.png" alt="GitHub Logo"></p>
+<p>По ссылке ниже есть полный код визуализации датасета с террактами</p>
+<p><strong>Пара полезных ссылок:</strong></p>
+<ul>
+<li><a href="https://github.com/dm-novikov/notebooks/blob/master/pandas_visual.ipynb">Мой Jupyter Notebook с различными визуализациями и манипуляциями</a></li>
+</ul>
+
+      </article>
+
+      
+
+      
+
+    </div>
+  </div>
+</div>
+ 
+
+    
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-169654018-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+
+</body>
+</html>
+
