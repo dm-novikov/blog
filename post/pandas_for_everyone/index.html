@@ -73,7 +73,7 @@ data_prep(data_iter, func_filter)
 </code></pre></div><p>Важно, данный тип данных подходит только для столбцов с низкой вариабельностью. Иначе теряется смысл сего действия.</p>
 <h6 id="снижай-разрядность-своего-intfloat">Снижай разрядность своего int/float</h6>
 <p>По умолчанию Pandas выделяет <em>64</em> бита для хранения ваших численных данных, но если вы уверены что такие цифры вам попросту не нужны, то измените тип на 32 или 16.</p>
-<p><img src="D:/Git/blog/blog/images/pandas.png" alt="GitHub Logo"></p>
+<p><img src="images/pandas.png" alt="GitHub Logo"></p>
 <p><strong>Пара полезных ссылок:</strong></p>
 <ul>
 <li><a href="https://realpython.com/python-pandas-tricks/">Python Pandas: Tricks &amp; Features You May Not Know</a></li>
@@ -102,7 +102,7 @@ world <span style="color:#f92672">=</span> geopandas<span style="color:#f92672">
 <span style="color:#75715e"># Нарисуем распределение на карте</span>
 ax <span style="color:#f92672">=</span> world<span style="color:#f92672">.</span>plot(color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;white&#39;</span>, edgecolor<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;black&#39;</span>, figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">20</span>,<span style="color:#ae81ff">10</span>))
 a  <span style="color:#f92672">=</span> gdf<span style="color:#f92672">.</span>plot(ax<span style="color:#f92672">=</span>ax, markersize <span style="color:#f92672">=</span> data_terr[<span style="color:#e6db74">&#39;nkill&#39;</span>] <span style="color:#f92672">/</span> <span style="color:#ae81ff">5</span>, marker<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;o&#39;</span>, color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;red&#39;</span>, cax<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;right&#39;</span>)
-</code></pre></div><p><img src="D:/Git/blog/blog/images/geopandas.png" alt="GitHub Logo"></p>
+</code></pre></div><p><img src="images/geopandas.png" alt="GitHub Logo"></p>
 <p>По ссылке ниже есть полный код визуализации датасета с террактами</p>
 <p><strong>Пара полезных ссылок:</strong></p>
 <ul>
