@@ -5,9 +5,28 @@
     <link>https://dm-novikov.github.io/blog/tags/</link>
     <description>Recent content in Tags on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Fri, 12 Jun 2020 16:41:22 +0300</lastBuildDate>
     
 	<atom:link href="https://dm-novikov.github.io/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>clickhouse</title>
+      <link>https://dm-novikov.github.io/blog/tags/clickhouse/</link>
+      <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/tags/clickhouse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>пишем-sql</title>
+      <link>https://dm-novikov.github.io/blog/tags/%D0%BF%D0%B8%D1%88%D0%B5%D0%BC-sql/</link>
+      <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/tags/%D0%BF%D0%B8%D1%88%D0%B5%D0%BC-sql/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>
