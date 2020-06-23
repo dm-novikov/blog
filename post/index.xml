@@ -12,10 +12,10 @@
     
     <item>
       <title>Как обмануть Logs API</title>
-      <link>https://dm-novikov.github.io/blog/post/metrica_clickhouse/</link>
+      <link>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</link>
       <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
       
-      <guid>https://dm-novikov.github.io/blog/post/metrica_clickhouse/</guid>
+      <guid>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</guid>
       <description>Делаем работу дважды Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде array.
 Вот что по этому поводу сказала поддержка
  На самом деле параметры будут парситься от самого &amp;ldquo;нижнего&amp;rdquo; уровня до самого &amp;ldquo;верхнего&amp;rdquo;. По этой причине, значения на уровнях Выше могут дублироваться по отношению к более &amp;ldquo;нижним&amp;rdquo; уровням.
@@ -24,21 +24,12 @@
     
     <item>
       <title>ClickHouse, range и регрессия</title>
-      <link>https://dm-novikov.github.io/blog/post/range_clickhouse/</link>
+      <link>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</link>
       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
       
-      <guid>https://dm-novikov.github.io/blog/post/range_clickhouse/</guid>
+      <guid>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</guid>
       <description>Что за range(?) В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья arrayJoin(range()).
 select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] select arrayJoin(range(10)) | arrayJoin\(range\(10\)\) | | :--- | | 0 | | 1 | | 2 | | 3 | | 4 | | 5 | | 6 | | 7 | | 8 | | 9 | Применение 1 Генерация новых значений для сломанной воронки Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое.</description>
-    </item>
-    
-    <item>
-      <title>Первый пост</title>
-      <link>https://dm-novikov.github.io/blog/post/first/</link>
-      <pubDate>Sat, 30 May 2020 14:58:44 +0300</pubDate>
-      
-      <guid>https://dm-novikov.github.io/blog/post/first/</guid>
-      <description>Мой первый пост ¯_(ツ)_/¯</description>
     </item>
     
   </channel>

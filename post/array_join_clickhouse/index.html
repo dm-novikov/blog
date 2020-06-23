@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>ClickHouse, range и регрессия - Dmitriy Novikov</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="keywords" content="">
+  <link rel="canonical" href="https://dm-novikov.github.io/blog/post/array_join_clickhouse/">
+
+  
+  
+
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" type="text/css" href="https://dm-novikov.github.io/blog/css/combined-min.css">
+  
+
+</head>
+<body class="">
+
+<div class="site-wrap">
+  <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://dm-novikov.github.io/blog" class="site-title">Dmitriy Novikov</a>
+      <nav class="site-nav right">
+      <a href="https://dm-novikov.github.io/blog/about/">Обо мне</a>
+<a href="https://dm-novikov.github.io/blog/tags/">Теги</a>
+<a href="https://dm-novikov.github.io/blog/contact/">Контакты</a>
+</form>
+
+      </nav>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</header>
+
+  <div class="post p2 p-responsive wrap" role="main">
+    <div class="measure">
+      <div class="post-header mb2">
+        <h1 class="py2">ClickHouse, range и регрессия</h1>
+        <span class="post-meta">May 30, 2020 </span><br>
+        
+      </div>
+
+      <article class="post-content">
+      <h3 id="что-за-range">Что за range(?)</h3>
+<p>В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья  <em>arrayJoin(range())</em>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> range(<span style="color:#ae81ff">10</span>)
+
+<span style="color:#f92672">&gt;&gt;</span>[<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span>,<span style="color:#ae81ff">8</span>,<span style="color:#ae81ff">9</span>]
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> arrayJoin(range(<span style="color:#ae81ff">10</span>))
+
+<span style="color:#f92672">|</span> arrayJoin<span style="color:#960050;background-color:#1e0010">\</span>(range<span style="color:#960050;background-color:#1e0010">\</span>(<span style="color:#ae81ff">10</span><span style="color:#960050;background-color:#1e0010">\</span>)<span style="color:#960050;background-color:#1e0010">\</span>) <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">5</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">6</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">7</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">|</span>
+</code></pre></div><h3 id="применение-1">Применение 1</h3>
+<h5 id="генерация-новых-значений-для-сломанной-воронки">Генерация новых значений для сломанной воронки</h5>
+<p>Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое..¯_(ツ)_/¯ и построить воронку простым select-ом не получится. Такое часто бывает когда у вас event аналитика. Окэй! Попробуем подумать что мы можем сделать.</p>
+<p>Скрипт генерации данных в CH</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Тут</span> <span style="color:#960050;background-color:#1e0010">просто</span> <span style="color:#960050;background-color:#1e0010">небольшой</span> <span style="color:#960050;background-color:#1e0010">запрос</span> <span style="color:#960050;background-color:#1e0010">чтобы</span> <span style="color:#960050;background-color:#1e0010">сгенерировать</span> <span style="color:#960050;background-color:#1e0010">нужные</span> <span style="color:#960050;background-color:#1e0010">нам</span> <span style="color:#960050;background-color:#1e0010">данные</span>,
+<span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">тут</span> <span style="color:#960050;background-color:#1e0010">кстати</span> <span style="color:#960050;background-color:#1e0010">мы</span> <span style="color:#960050;background-color:#1e0010">и</span> <span style="color:#960050;background-color:#1e0010">применяем</span> arrayJoin
+
+<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step, <span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Шаг</span>
+ tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID <span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Идентификатор</span> <span style="color:#960050;background-color:#1e0010">юзера</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)
+
+<span style="color:#f92672">|</span> step <span style="color:#f92672">|</span> uid <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+</code></pre></div><p>Одно очевидное наблюдение, у нас всегда есть последнее событие юзера, и так как мы знаем что воронка не возрастает, то можно ориентироваться на это событие как на конечное, и все что нам останется, это сгенерировать недостающие шаги воронки, вот тут то нам и поможет range + arrayJoin.</p>
+<p><strong>Итак по шагам:</strong></p>
+<p>Шаг 1: Создадим необходимую последовательность из шагов которые мы хотим увидеть</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name,
+       step
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+          tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> name,
+          tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step)
+
+<span style="color:#f92672">|</span> events <span style="color:#f92672">|</span> events<span style="color:#960050;background-color:#1e0010">\</span>_index <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+</code></pre></div><p>Шаг 2: Объединими наши данные по событиям с таблицей выше, где размечены шаги по номерам</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+          tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> step_id,
+          step
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+             tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+             tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step_id)) <span style="color:#66d9ef">USING</span> step
+
+<span style="color:#f92672">|</span> step <span style="color:#f92672">|</span> uid <span style="color:#f92672">|</span> step<span style="color:#960050;background-color:#1e0010">\</span>_id <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+</code></pre></div><p>Хорошо, теперь каждый евент юзера помечен номером в воронке.</p>
+<p>Шаг 3: Немного магии</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> UID,
+       <span style="color:#66d9ef">transform</span>(<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> arrayJoin(range(toUInt8(<span style="color:#66d9ef">max</span>(step_id)))), [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>], [<span style="color:#e6db74">&#39;step 1&#39;</span>,
+         <span style="color:#e6db74">&#39;step 2&#39;</span>,
+         <span style="color:#e6db74">&#39;step 3&#39;</span>], <span style="color:#e6db74">&#39;none&#39;</span>) <span style="color:#66d9ef">AS</span> q
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+          tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> step_id,
+          step
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+             tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+             tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step_id)) <span style="color:#66d9ef">USING</span> step
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> UID
+
+
+<span style="color:#f92672">|</span> uid <span style="color:#f92672">|</span> q <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> step <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span>
+</code></pre></div><p><em>max(step_id) &gt; toUInt8() -&gt; range() -&gt; arrayJoin() -&gt; 1+ -&gt; transform()</em></p>
+<p>Для начала мы взяли максимальный достигнутый шаг пользователя, преобразовали тип значения (требование range), затем сформировали массив,  развернули его, прибавили 1 чтобы начиналось с 1 (хотя это опционально) и применили <a href="https://clickhouse.tech/docs/ru/sql-reference/functions/other-functions/#transformx-array-from-array-to-default">transform</a> (это что то вроде case для массивов)</p>
+<p>Итак мы получили то что хотели, из таблицы где часть данных пропала, мы дозаполнили ее необходимыми значениями.</p>
+<p><em>P.S</em>
+Если вдруг вы спрашиваете зачем это нужно? Резонный вопрос, можно ведь было просто сгруппировать данные по событиям и посчитать камуляту снизу вверх, и получить тот же результат, проблема в том что бизнес не стоит на месте, и возможно завтра вам потребуется добавить новый признак для пользователя (например его пол), и тогда придется не дописать небольшой участок запроса (Join к пользователям), а переписать его полностью. Все что описано выше, характерно только для ClickHouse. В других БД можно реализовать эту задачу чуть проще.</p>
+<h3 id="применение-2">Применение 2</h3>
+<h5 id="прогнозирование-на-sql-через-линейную-регрессию">Прогнозирование на SQL через линейную регрессию</h5>
+<p>Этот запрос я написал когда делал прогнозирование для free-to-play игры, задача была простой, реализовать прогноз который можно было  поддерживать BI аналитиками. Суть метода весьма проста, в видеоиграх часто использую такой метод прогнозирвоания с накоплением ARPU/ARPPU, его приближают некоторым полиномом (или логарифмом) и выводят то что называют LTV.</p>
+<p><img src="https://hsto.org/files/c52/ebb/978/c52ebb9780ca4d9ea95b7629a3d782dd.png" alt="Вот что то в этом роде"></p>
+<p><em>Вот что то в этом роде</em></p>
+<p>Не будем обсуждать этот метод, его точность и вот это все. А просто возьмем и сделаем наш супер прогноз.</p>
+<p>Генерация датасета</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+       toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+       tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)
+
+<span style="color:#f92672">|</span> cohort <span style="color:#f92672">|</span> <span style="color:#66d9ef">day</span> <span style="color:#f92672">|</span> value <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">100</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">200</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">300</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">100</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">5</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">200</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">6</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">300</span> <span style="color:#f92672">|</span>
+</code></pre></div><p>Важная особенность, я не беру совсем сырые данные с которыми вы скорее всего будете работать, в моем случае у каждой когорты есть уже начитанный индекс первого входа. В нашем датасете у нас есть, когорта (заранее известная), день жизни когорты, и ее заработок в деньгах. Все что нам остается, это дозаполнить пропуски, в алгоритме их нельзя оставлять пустыми и сделать прогноз.</p>
+<p><strong>Итак по шагам:</strong></p>
+<p>Шаг 1: Сгенерируем все дни жизни когорты</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> cohort,
+          day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+             arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+      <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+          toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+          tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>),(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>),
+                       (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>),(<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                <span style="color:#66d9ef">DAY</span>)
+
+<span style="color:#f92672">|</span> cohort <span style="color:#f92672">|</span> <span style="color:#66d9ef">day</span> <span style="color:#f92672">|</span> value <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">100</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">5</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">200</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">6</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">300</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">100</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">200</span> <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">300</span> <span style="color:#f92672">|</span>
+</code></pre></div><p>Фух, сложновато, но на самом деле мы делале что то похожее на предыдущий пример, только чуть проще. Я опущу разъяснения, вы можете самостоятельно с этим разобраться.</p>
+<p>Шаг 2: Ну что же, теперь давайте снова все свернем в массивы&hellip;what?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+       arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                   tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                   tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+         <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+   <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+     (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+             toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+             tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                            <span style="color:#66d9ef">DAY</span>))
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort
+
+<span style="color:#f92672">|</span> cohort <span style="color:#f92672">|</span> X <span style="color:#f92672">|</span> y <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> :<span style="color:#75715e">--- | :--- | :--- |
+</span><span style="color:#75715e"></span><span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">2</span> <span style="color:#f92672">|</span> <span style="color:#960050;background-color:#1e0010">\</span>[<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span>,<span style="color:#ae81ff">8</span><span style="color:#960050;background-color:#1e0010">\</span>] <span style="color:#f92672">|</span> <span style="color:#960050;background-color:#1e0010">\</span>[<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>,<span style="color:#ae81ff">110</span>,<span style="color:#ae81ff">110</span>,<span style="color:#ae81ff">310</span>,<span style="color:#ae81ff">310</span>,<span style="color:#ae81ff">310</span>,<span style="color:#ae81ff">610</span><span style="color:#960050;background-color:#1e0010">\</span>] <span style="color:#f92672">|</span>
+<span style="color:#f92672">|</span> cohort <span style="color:#ae81ff">1</span> <span style="color:#f92672">|</span> <span style="color:#960050;background-color:#1e0010">\</span>[<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span><span style="color:#960050;background-color:#1e0010">\</span>] <span style="color:#f92672">|</span> <span style="color:#960050;background-color:#1e0010">\</span>[<span style="color:#ae81ff">10</span>,<span style="color:#ae81ff">110</span>,<span style="color:#ae81ff">310</span>,<span style="color:#ae81ff">610</span><span style="color:#960050;background-color:#1e0010">\</span>] <span style="color:#f92672">|</span>
+</code></pre></div><p>И так, тут все очень просто, просто упаковываем дни и значения в 2 массива, обозначаем их X, y.</p>
+<p>Шаг 3: Прогнозирование</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+       arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y,
+       arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), X) <span style="color:#66d9ef">AS</span> X_ln, <span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Преобразуем</span> <span style="color:#960050;background-color:#1e0010">независимую</span> <span style="color:#960050;background-color:#1e0010">переменную</span>, <span style="color:#960050;background-color:#1e0010">это</span> <span style="color:#960050;background-color:#1e0010">позволит</span> <span style="color:#960050;background-color:#1e0010">сгладить</span> <span style="color:#960050;background-color:#1e0010">прогноз</span>
+ arrayReduce(<span style="color:#e6db74">&#39;simpleLinearRegression&#39;</span>, X_ln, y) <span style="color:#66d9ef">AS</span> coef, <span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Собственно</span> <span style="color:#960050;background-color:#1e0010">расчет</span> <span style="color:#960050;background-color:#1e0010">коэффициентов</span> (<span style="color:#960050;background-color:#1e0010">используется</span> <span style="color:#960050;background-color:#1e0010">аналитическое</span> <span style="color:#960050;background-color:#1e0010">решение</span>)
+ <span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">Все</span> <span style="color:#960050;background-color:#1e0010">последующие</span> <span style="color:#960050;background-color:#1e0010">преобразования</span> <span style="color:#960050;background-color:#1e0010">нужны</span> <span style="color:#960050;background-color:#1e0010">для</span> <span style="color:#960050;background-color:#1e0010">прогноза</span> <span style="color:#960050;background-color:#1e0010">выручки</span> <span style="color:#960050;background-color:#1e0010">на</span> N <span style="color:#960050;background-color:#1e0010">день</span>
+ <span style="color:#66d9ef">length</span>(X_ln) <span style="color:#66d9ef">AS</span> count_days,
+ arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), range(<span style="color:#66d9ef">length</span>(X_ln) <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> days_predict,
+ tupleElement(coef, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> coef_a,
+ tupleElement(coef, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> coef_b,
+ arrayMap(x <span style="color:#f92672">-&gt;</span> x<span style="color:#f92672">*</span>coef_a <span style="color:#f92672">+</span> coef_b, days_predict) <span style="color:#66d9ef">AS</span> array_predict
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                   tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                   tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+         <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+   <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+     (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+             toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+             tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                            <span style="color:#66d9ef">DAY</span>))
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort
+</code></pre></div><p>Ну что же, прогноз есть, правда он лежит в массиве, необходимо его распаковать. Эти и займемся.</p>
+<p>Шаг 4: Подготовка данных для BI</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       arrayJoin(range(count_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> index_days,
+       arrayElement(array_predict, index_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> predict,
+       arrayElement(y, index_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> revenue
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> cohort,
+          groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+          arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), X) <span style="color:#66d9ef">AS</span> X_ln,
+          arrayReduce(<span style="color:#e6db74">&#39;simpleLinearRegression&#39;</span>, X_ln, y) <span style="color:#66d9ef">AS</span> coef,
+          <span style="color:#66d9ef">length</span>(X_ln) <span style="color:#66d9ef">AS</span> count_days,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), range(<span style="color:#66d9ef">length</span>(X_ln) <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> days_predict,
+          tupleElement(coef, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> coef_a,
+          tupleElement(coef, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> coef_b,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> x <span style="color:#f92672">*</span> coef_a <span style="color:#f92672">+</span> coef_b, days_predict) <span style="color:#66d9ef">AS</span> array_predict
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> cohort,
+                   <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                   arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                      tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                      tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+               <span style="color:#66d9ef">FROM</span>
+                 (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+            <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+      <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+        (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                               <span style="color:#66d9ef">DAY</span>))
+   <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)
+</code></pre></div><p>Фух, мы это сделали. Простой прогноз который можно засунуть в BI. Данный метод не претендует на супер точность, уникальность и вот это все. Это один из способов решить небольшую проблему, просто, для того чтобы выиграть время и сделать качественную модель прогнозирования.</p>
+<p>Спасибо за прочтение :)</p>
+
+      </article>
+
+       
+      <p class="post-meta">Теги:&nbsp;
+        
+            
+            <a href="https://dm-novikov.github.io/blog/tags/%d0%9f%d0%b8%d1%88%d0%b5%d0%bc%20SQL">Пишем SQL</a>
+        
+            ,&nbsp;
+            <a href="https://dm-novikov.github.io/blog/tags/ClickHouse">ClickHouse</a>
+        
+      </p>
+       
+
+      
+
+    </div>
+  </div>
+</div>
+ 
+
+    
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-169654018-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+
+</body>
+</html>
+
