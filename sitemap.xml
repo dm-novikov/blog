@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/tags/clickhouse/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/post/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/tags/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/tags/%D0%BF%D0%B8%D1%88%D0%B5%D0%BC-sql/</loc>
+    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</loc>
+    <lastmod>2020-05-30T15:00:13+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/about/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/contact/</loc>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

@@ -1,13 +1,473 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Categories on Dmitriy Novikov</title>
-    <link>https://dm-novikov.github.io/blog/categories/</link>
-    <description>Recent content in Categories on Dmitriy Novikov</description>
-    <generator>Hugo -- gohugo.io</generator>
-    
-	<atom:link href="https://dm-novikov.github.io/blog/categories/index.xml" rel="self" type="application/rss+xml" />
-    
-    
-  </channel>
+ <channel>
+   <title>Categories on Dmitriy Novikov</title>
+   <link>https://dm-novikov.github.io/blog/categories/</link>
+   <description>Recent content in Categories on Dmitriy Novikov</description>
+   <generator>Hugo -- gohugo.io</generator>
+   
+       <atom:link href="https://dm-novikov.github.io/blog/categories/index.xml" rel="self" type="application/rss+xml" />
+   
+   
+     <item>
+       <title>Как обмануть Logs API</title>
+       <link>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</link>
+       <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
+       
+       <guid>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</guid>
+       <description>&lt;h3 id=&#34;делаем-работу-дважды&#34;&gt;Делаем работу дважды&lt;/h3&gt;
+&lt;p&gt;Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде &lt;em&gt;array&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Вот что по этому поводу сказала поддержка&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;На самом деле параметры будут парситься от самого &amp;ldquo;нижнего&amp;rdquo; уровня до самого &amp;ldquo;верхнего&amp;rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &amp;ldquo;нижним&amp;rdquo; уровням.&lt;/p&gt;
+&lt;p&gt;Можно взять следующий пример:
+{
+&amp;ldquo;Key1_1&amp;rdquo;: {
+&amp;ldquo;Key2_1&amp;rdquo;: [
+&amp;ldquo;Key3_11&amp;rdquo;,
+&amp;ldquo;Key3_12&amp;rdquo;
+],
+&amp;ldquo;Key2_2&amp;rdquo;: [
+&amp;ldquo;Key3_21&amp;rdquo;,
+&amp;ldquo;Key3_22&amp;rdquo;
+]
+},
+​​​​ &amp;ldquo;Key1_2&amp;rdquo;: &amp;ldquo;Key2_3&amp;quot;​​​
+}&lt;/p&gt;
+&lt;p&gt;В указанном примере можно ожидать следующие массивы в ответе Logs API:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&amp;ldquo;ym:pv:parsedParamsKey1&amp;rdquo; - [&amp;ldquo;Key1_1&amp;rdquo;,&amp;ldquo;Key1_1&amp;rdquo;,&amp;ldquo;Key1_1&amp;rdquo;,&amp;ldquo;Key1_1&amp;rdquo;,&amp;ldquo;Key1_2&amp;rdquo;]&lt;/li&gt;
+&lt;li&gt;&amp;ldquo;ym:pv:parsedParamsKey2&amp;rdquo; - [&amp;ldquo;Key2_1&amp;rdquo;,&amp;ldquo;Key2_1&amp;rdquo;,&amp;ldquo;Key2_2&amp;rdquo;,&amp;ldquo;Key2_2&amp;rdquo;,&amp;ldquo;Key2_3&amp;rdquo;]&lt;/li&gt;
+&lt;li&gt;&amp;ldquo;ym:pv:parsedParamsKey3&amp;rdquo; - [&amp;ldquo;Key3_11&amp;rdquo;,&amp;ldquo;Key3_12&amp;rdquo;,&amp;ldquo;Key3_21&amp;rdquo;,&amp;ldquo;Key3_22&amp;rdquo;,&amp;quot;&amp;quot;]&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Сложна, но давайте ради шутки просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объек, но кому и зачем это нужно)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;,
+    splitByChar(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, replaceAll(replaceOne(replaceOne(ParsedParamsKey1, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&amp;#39;)) as params1,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    splitByChar(&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey2, &amp;#39;&lt;/span&gt;[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;]&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; params2,
+    splitByChar(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, replaceAll(replaceOne(replaceOne(ParsedParamsKey3, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&amp;#39;)) as params3,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    splitByChar(&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey4, &amp;#39;&lt;/span&gt;[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;]&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; params4,
+    splitByChar(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, replaceAll(replaceOne(replaceOne(ParsedParamsKey5, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&amp;#39;)) as params5,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    splitByChar(&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey6, &amp;#39;&lt;/span&gt;[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;]&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; params6,
+    splitByChar(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, replaceAll(replaceOne(replaceOne(ParsedParamsKey7, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&amp;#39;)) as params7,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    splitByChar(&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey8, &amp;#39;&lt;/span&gt;[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;]&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; params8,
+    splitByChar(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, replaceAll(replaceOne(replaceOne(ParsedParamsKey9, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&amp;#39;)) as params9,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    splitByChar(&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey10, &amp;#39;&lt;/span&gt;[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;]&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;, &amp;#39;&amp;#39;), &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; params10,
+    arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, range(&lt;span style=&#34;color:#66d9ef&#34;&gt;length&lt;/span&gt;(params1))) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; len,
+    arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;  arrayFilter(y &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; y &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, x),arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; array(arrayElement(params1, x),
+                        arrayElement(params2, x),
+                        arrayElement(params3, x),
+                        arrayElement(params4, x),
+                        arrayElement(params5, x),
+                        arrayElement(params6, x),
+                        arrayElement(params7, x),
+                        arrayElement(params8, x),
+                        arrayElement(params9, x),
+                        arrayElement(params10, x)), len)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; array_array,
+        arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; x[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;], array_array) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; value,
+        arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; arrayStringConcat(x, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;_&amp;#39;&lt;/span&gt;), arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; arrayPopBack(x), array_array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;,
+        arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; arrayStringConcat(x, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#34;:&amp;#34;&amp;#39;&lt;/span&gt;), arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; array(arrayElement(&lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;, x), arrayElement(value, x)), len)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; tmp,
+        replaceAll(replaceOne(replaceOne(toString(tmp), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;]&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;}&amp;#39;&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#39;&amp;#39;, &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#39;) as tmp_json,
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        if(tmp_json = &amp;#39;{&amp;#34;&amp;#34;:&amp;#34;&amp;#34;}&amp;#39;, &amp;#39;&amp;#39;, tmp_json) as params_json
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;FROM #твоя таблица
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;При большом желании можно теперь сделать MV чтобы не бегать каждый раз по всей таблице и не грузить сервер.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Вопрос:&lt;/em&gt; на..¯_(ツ)_/¯ это нужно делать?&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Ответ:&lt;/em&gt; Why not..bro?&lt;/p&gt;
+</description>
+     </item>
+   
+     <item>
+       <title>ClickHouse, range и регрессия</title>
+       <link>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</link>
+       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
+       
+       <guid>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</guid>
+       <description>&lt;h3 id=&#34;что-за-range&#34;&gt;Что за range(?)&lt;/h3&gt;
+&lt;p&gt;В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья  &lt;em&gt;arrayJoin(range())&lt;/em&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;select&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;Вывод&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;[0,1,2,3,4,5,6,7,8,9]&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;select&lt;/span&gt; arrayJoin(range(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; arr
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;Вывод&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;6&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;7&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;9&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;применение-1&#34;&gt;Применение 1&lt;/h3&gt;
+&lt;h5 id=&#34;генерация-новых-значений-для-сломанной-воронки&#34;&gt;Генерация новых значений для сломанной воронки&lt;/h5&gt;
+&lt;p&gt;Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое..¯_(ツ)_/¯ и построить воронку простым select-ом не получится. Такое часто бывает когда у вас event аналитика. Окэй! Попробуем подумать что мы можем сделать.&lt;/p&gt;
+&lt;p&gt;Скрипт генерации данных в CH&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Тут&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;просто&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;небольшой&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;запрос&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;чтобы&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;сгенерировать&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;нужные&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;нам&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;данные&lt;/span&gt;,
+&lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;тут&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;кстати&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;мы&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;и&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;применяем&lt;/span&gt; arrayJoin
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step, &lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Шаг&lt;/span&gt;
+ tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; UID &lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Идентификатор&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;юзера&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;),(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;step&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;uid&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Одно очевидное наблюдение, у нас всегда есть последнее событие юзера, и так как мы знаем что воронка не возрастает, то можно ориентироваться на это событие как на конечное, и все что нам останется, это сгенерировать недостающие шаги воронки, вот тут то нам и поможет range + arrayJoin.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Итак по шагам:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Шаг 1: Создадим необходимую последовательность из шагов которые мы хотим увидеть&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; name,
+       step
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin(array((&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; tuple,
+          tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; name,
+          tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;events&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;events_index&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Шаг 2: Объединими наши данные по событиям с таблицей выше, где размечены шаги по номерам&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step,
+          tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; UID
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;),(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; step_id,
+          step
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin(array((&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; tuple,
+             tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step,
+             tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step_id)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; step
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;Вывод&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;em&gt;step&lt;/em&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;em&gt;uid&lt;/em&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;em&gt;step_id&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;step 3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Хорошо, теперь каждый евент юзера помечен номером в воронке.&lt;/p&gt;
+&lt;p&gt;Шаг 3: Немного магии&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; UID,
+       &lt;span style=&#34;color:#66d9ef&#34;&gt;transform&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; arrayJoin(range(toUInt8(&lt;span style=&#34;color:#66d9ef&#34;&gt;max&lt;/span&gt;(step_id)))), [&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;], [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;,
+         &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;,
+         &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;], &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;none&amp;#39;&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; q
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step,
+          tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; UID
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;),(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; step_id,
+          step
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin(array((&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step 3&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; tuple,
+             tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step,
+             tupleElement(tuple, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; step_id)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; step
+&lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; UID
+
+
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; uid &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; q &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; :&lt;span style=&#34;color:#75715e&#34;&gt;--- | :--- |
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; step &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;max(step_id) &amp;gt; toUInt8() -&amp;gt; range() -&amp;gt; arrayJoin() -&amp;gt; 1+ -&amp;gt; transform()&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Для начала мы взяли максимальный достигнутый шаг пользователя, преобразовали тип значения (требование range), затем сформировали массив,  развернули его, прибавили 1 чтобы начиналось с 1 (хотя это опционально) и применили &lt;a href=&#34;https://clickhouse.tech/docs/ru/sql-reference/functions/other-functions/#transformx-array-from-array-to-default&#34;&gt;transform&lt;/a&gt; (это что то вроде case для массивов)&lt;/p&gt;
+&lt;p&gt;Итак мы получили то что хотели, из таблицы где часть данных пропала, мы дозаполнили ее необходимыми значениями.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;P.S&lt;/em&gt;
+Если вдруг вы спрашиваете зачем это нужно? Резонный вопрос, можно ведь было просто сгруппировать данные по событиям и посчитать камуляту снизу вверх, и получить тот же результат, проблема в том что бизнес не стоит на месте, и возможно завтра вам потребуется добавить новый признак для пользователя (например его пол), и тогда придется не дописать небольшой участок запроса (Join к пользователям), а переписать его полностью. Все что описано выше, характерно только для ClickHouse. В других БД можно реализовать эту задачу чуть проще.&lt;/p&gt;
+&lt;h3 id=&#34;применение-2&#34;&gt;Применение 2&lt;/h3&gt;
+&lt;h5 id=&#34;прогнозирование-на-sql-через-линейную-регрессию&#34;&gt;Прогнозирование на SQL через линейную регрессию&lt;/h5&gt;
+&lt;p&gt;Этот запрос я написал когда делал прогнозирование для free-to-play игры, задача была простой, реализовать прогноз который можно было  поддерживать BI аналитиками. Суть метода весьма проста, в видеоиграх часто использую такой метод прогнозирвоания с накоплением ARPU/ARPPU, его приближают некоторым полиномом (или логарифмом) и выводят то что называют LTV.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://hsto.org/files/c52/ebb/978/c52ebb9780ca4d9ea95b7629a3d782dd.png&#34; alt=&#34;Вот что то в этом роде&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Вот что то в этом роде&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Не будем обсуждать этот метод, его точность и вот это все. А просто возьмем и сделаем наш супер прогноз.&lt;/p&gt;
+&lt;p&gt;Генерация датасета&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+       toUInt16(tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+       tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)
+
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;day&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; value &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; :&lt;span style=&#34;color:#75715e&#34;&gt;--- | :--- | :--- |
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Важная особенность, я не беру совсем сырые данные с которыми вы скорее всего будете работать, в моем случае у каждой когорты есть уже начитанный индекс первого входа. В нашем датасете у нас есть, когорта (заранее известная), день жизни когорты, и ее заработок в деньгах. Все что нам остается, это дозаполнить пропуски, в алгоритме их нельзя оставлять пустыми и сделать прогноз.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Итак по шагам:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Шаг 1: Сгенерируем все дни жизни когорты&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+          day1 &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+             &lt;span style=&#34;color:#66d9ef&#34;&gt;max&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; last_login,
+             arrayJoin(range(last_login)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; day1
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+                tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+                tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+           (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array))
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+          toUInt16(tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+          tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;),(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;),
+                       (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;),(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; (cohort,
+                                                                                                                                &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;)
+
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;day&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; value &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; :&lt;span style=&#34;color:#75715e&#34;&gt;--- | :--- | :--- |
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Фух, сложновато, но на самом деле мы делале что то похожее на предыдущий пример, только чуть проще. Я опущу разъяснения, вы можете самостоятельно с этим разобраться.&lt;/p&gt;
+&lt;p&gt;Шаг 2: Ну что же, теперь давайте снова все свернем в массивы&amp;hellip;what?&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+       groupArray(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; X,
+       arrayCumSum(groupArray(value)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; y
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+             day1 &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;max&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; last_login,
+                arrayJoin(range(last_login)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; day1
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+           (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+                   tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+                   tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+              (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array))
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+             toUInt16(tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+             tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; (cohort,
+                                                                                                                                                                                                                            &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;))
+&lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort
+
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; X &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; y &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; :&lt;span style=&#34;color:#75715e&#34;&gt;--- | :--- | :--- |
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;110&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;110&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;310&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;310&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;310&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;610&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; cohort &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;110&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;310&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;610&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;И так, тут все очень просто, просто упаковываем дни и значения в 2 массива, обозначаем их X, y.&lt;/p&gt;
+&lt;p&gt;Шаг 3: Прогнозирование&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+       groupArray(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; X,
+       arrayCumSum(groupArray(value)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; y,
+       arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; ln(x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), X) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; X_ln, &lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Преобразуем&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;независимую&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;переменную&lt;/span&gt;, &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;это&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;позволит&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;сгладить&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;прогноз&lt;/span&gt;
+ arrayReduce(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;simpleLinearRegression&amp;#39;&lt;/span&gt;, X_ln, y) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef, &lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Собственно&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;расчет&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;коэффициентов&lt;/span&gt; (&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;используется&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;аналитическое&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;решение&lt;/span&gt;)
+ &lt;span style=&#34;color:#f92672&#34;&gt;#&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;Все&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;последующие&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;преобразования&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;нужны&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;для&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;прогноза&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;выручки&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;на&lt;/span&gt; N &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;день&lt;/span&gt;
+ &lt;span style=&#34;color:#66d9ef&#34;&gt;length&lt;/span&gt;(X_ln) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; count_days,
+ arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; ln(x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), range(&lt;span style=&#34;color:#66d9ef&#34;&gt;length&lt;/span&gt;(X_ln) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; days_predict,
+ tupleElement(coef, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef_a,
+ tupleElement(coef, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef_b,
+ arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;coef_a &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; coef_b, days_predict) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array_predict
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+             day1 &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;max&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; last_login,
+                arrayJoin(range(last_login)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; day1
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+           (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+                   tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+                   tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+              (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array))
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+             toUInt16(tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+             tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; (cohort,
+                                                                                                                                                                                                                            &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;))
+&lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ну что же, прогноз есть, правда он лежит в массиве, необходимо его распаковать. Эти и займемся.&lt;/p&gt;
+&lt;p&gt;Шаг 4: Подготовка данных для BI&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+       arrayJoin(range(count_days &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; index_days,
+       arrayElement(array_predict, index_days &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; predict,
+       arrayElement(y, index_days &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; revenue
+&lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+  (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+          groupArray(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; X,
+          arrayCumSum(groupArray(value)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; y,
+          arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; ln(x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), X) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; X_ln,
+          arrayReduce(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;simpleLinearRegression&amp;#39;&lt;/span&gt;, X_ln, y) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef,
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;length&lt;/span&gt;(X_ln) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; count_days,
+          arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; ln(x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;), range(&lt;span style=&#34;color:#66d9ef&#34;&gt;length&lt;/span&gt;(X_ln) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; days_predict,
+          tupleElement(coef, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef_a,
+          tupleElement(coef, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; coef_b,
+          arrayMap(x &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; coef_a &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; coef_b, days_predict) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array_predict
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+     (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+                day1 &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+           (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; cohort,
+                   &lt;span style=&#34;color:#66d9ef&#34;&gt;max&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; last_login,
+                   arrayJoin(range(last_login)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; day1
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+              (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+                      tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+                      tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+                 (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array))
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort)) &lt;span style=&#34;color:#66d9ef&#34;&gt;ANY&lt;/span&gt;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;LEFT&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;JOIN&lt;/span&gt;
+        (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; cohort,
+                toUInt16(tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;,
+                tupleElement(array, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; value
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;FROM&lt;/span&gt;
+           (&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt; arrayJoin([(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 1&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;), (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cohort 2&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;300&lt;/span&gt;)]) &lt;span style=&#34;color:#66d9ef&#34;&gt;AS&lt;/span&gt; array)) &lt;span style=&#34;color:#66d9ef&#34;&gt;USING&lt;/span&gt; (cohort,
+                                                                                                                                                                                                                               &lt;span style=&#34;color:#66d9ef&#34;&gt;DAY&lt;/span&gt;))
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;GROUP&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;BY&lt;/span&gt; cohort)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Фух, мы это сделали. Простой прогноз который можно засунуть в BI. Данный метод не претендует на супер точность, уникальность и вот это все. Это один из способов решить небольшую проблему, просто, для того чтобы выиграть время и сделать качественную модель прогнозирования.&lt;/p&gt;
+&lt;p&gt;Спасибо за прочтение :)&lt;/p&gt;
+</description>
+     </item>
+   
+ </channel>
 </rss>

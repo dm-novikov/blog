@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>clickhouse on Dmitriy Novikov</title>
+    <title>ClickHouse on Dmitriy Novikov</title>
     <link>https://dm-novikov.github.io/blog/tags/clickhouse/</link>
-    <description>Recent content in clickhouse on Dmitriy Novikov</description>
+    <description>Recent content in ClickHouse on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
     <lastBuildDate>Fri, 12 Jun 2020 16:41:22 +0300</lastBuildDate>
     
 	<atom:link href="https://dm-novikov.github.io/blog/tags/clickhouse/index.xml" rel="self" type="application/rss+xml" />
@@ -19,7 +20,7 @@
       <description>Делаем работу дважды Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде array.
 Вот что по этому поводу сказала поддержка
  На самом деле параметры будут парситься от самого &amp;ldquo;нижнего&amp;rdquo; уровня до самого &amp;ldquo;верхнего&amp;rdquo;. По этой причине, значения на уровнях Выше могут дублироваться по отношению к более &amp;ldquo;нижним&amp;rdquo; уровням.
-  Можно взять следующий пример: { &amp;ldquo;Key1_1&amp;rdquo;: { &amp;ldquo;Key2_1&amp;rdquo;: [ &amp;ldquo;Key3_11&amp;rdquo;, &amp;ldquo;Key3_12&amp;rdquo; ], &amp;ldquo;Key2_2&amp;rdquo;: [ &amp;ldquo;Key3_21&amp;rdquo;, &amp;ldquo;Key3_22&amp;rdquo; ] }, ​​​​ &amp;ldquo;Key1_2&amp;rdquo;: &amp;ldquo;Key2_3&amp;quot;​​​ }</description>
+Можно взять следующий пример: { &amp;ldquo;Key1_1&amp;rdquo;: { &amp;ldquo;Key2_1&amp;rdquo;: [ &amp;ldquo;Key3_11&amp;rdquo;, &amp;ldquo;Key3_12&amp;rdquo; ], &amp;ldquo;Key2_2&amp;rdquo;: [ &amp;ldquo;Key3_21&amp;rdquo;, &amp;ldquo;Key3_22&amp;rdquo; ] }, ​​​​ &amp;ldquo;Key1_2&amp;rdquo;: &amp;ldquo;Key2_3&amp;quot;​​​ }</description>
     </item>
     
     <item>
@@ -28,8 +29,7 @@
       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
       
       <guid>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</guid>
-      <description>Что за range(?) В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья arrayJoin(range()).
-select range(10) &amp;gt;&amp;gt;[0,1,2,3,4,5,6,7,8,9] select arrayJoin(range(10)) | arrayJoin\(range\(10\)\) | | :--- | | 0 | | 1 | | 2 | | 3 | | 4 | | 5 | | 6 | | 7 | | 8 | | 9 | Применение 1 Генерация новых значений для сломанной воронки Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое.</description>
+      <description>Что за range(?) В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволя</description>
     </item>
     
   </channel>
