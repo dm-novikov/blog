@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>SQL для аналитика - меняем массивы на JSON в ClikHouse</title>
+      <title>SQL: меняем массивы на JSON в ClikHouse</title>
       <link>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</link>
       <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
       
@@ -24,7 +24,7 @@
     </item>
     
     <item>
-      <title>SQL для аналитика - arrayJoin и range в ClickHouse</title>
+      <title>SQL: arrayJoin и range в ClickHouse</title>
       <link>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</link>
       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
       

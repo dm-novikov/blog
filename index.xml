@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>SQL для аналитика - меняем массивы на JSON в ClikHouse</title>
+      <title>SQL: меняем массивы на JSON в ClikHouse</title>
       <link>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</link>
       <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
       
@@ -24,7 +24,7 @@
     </item>
     
     <item>
-      <title>SQL для аналитика - arrayJoin и range в ClickHouse</title>
+      <title>SQL: arrayJoin и range в ClickHouse</title>
       <link>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</link>
       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
       
@@ -38,9 +38,11 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://dm-novikov.github.io/blog/about/</guid>
-      <description>Всем привет, я Дмитрий. Занимаюсь всем что связано с данными. На текущий момент погружен в первую очередь в техническую часть работы, то что сейчас называют Data Engineer/ETL. За время трудовой деятельности, удалось поработать в области маркетинга, продуктовой аналитики и игр. Я очень много времени уделяю самообразованию. Увлечен комиксами, интересными странами и необычной едой.
-Резюме Ключевые навыки и знания  Программирование
- Python, R Базовые знания ООП и паттернов Базовые знания алгоритмов  Обработка данных</description>
+      <description>Hello, I am Dmitry.
+I am a data enthusiast, I like ETL and statistics, map-reduce and machine learning. I believe that data help to make the world better. I have experience in marketing, game analytics and a little product analytics.
+My hobbies are comics, travelling and exotic food. Also, I very much times waste on learning.
+Resume Experience  Data Engineer November 2019 - Now | Company: Foodplex
+Principals task</description>
     </item>
     
     <item>
