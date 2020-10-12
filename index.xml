@@ -6,10 +6,20 @@
     <description>Recent content on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 12 Jun 2020 16:41:22 +0300</lastBuildDate>
+    <lastBuildDate>Mon, 12 Oct 2020 22:18:19 +0300</lastBuildDate>
     
 	<atom:link href="https://dm-novikov.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>SQL: задачи с собеседований на Постгресе</title>
+      <link>https://dm-novikov.github.io/blog/post/tasks_from_interviews/</link>
+      <pubDate>Mon, 12 Oct 2020 22:18:19 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/tasks_from_interviews/</guid>
+      <description>Задача 1. Эмуляция rank() Суть задачи, для каждого значения обозначить его номер в рейтинге по заданному полю, тут лучше показать пример. Колонка rank, выдает необходимый результат. Ну и собственно запрос который решает нашу задачу
+SELECT user, value, rank() OVER (ORDER BY value DESC) FROM table    user value rank     3 50 1   1 10 2   4 10 2   5 6 4   2 5 5    Попробуем решить её без оконных функций, первый раз когда мне ее задали я сильно затупил, и вроде начал двигаться в нужном направлении, но усталость после примерно часа собеседования меня победила :)</description>
+    </item>
     
     <item>
       <title>SQL: меняем массивы на JSON в ClikHouse</title>
