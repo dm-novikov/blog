@@ -18,6 +18,21 @@
   </url>
   
   <url>
+    <loc>https://dm-novikov.github.io/blog/tags/pandas/</loc>
+    <lastmod>2020-06-21T20:54:03+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</loc>
+    <lastmod>2020-06-21T20:54:03+03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dm-novikov.github.io/blog/tags/</loc>
+    <lastmod>2020-06-21T20:54:03+03:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://dm-novikov.github.io/blog/tags/clickhouse/</loc>
     <lastmod>2020-06-12T16:41:22+03:00</lastmod>
   </url>
@@ -29,11 +44,6 @@
   
   <url>
     <loc>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</loc>
-    <lastmod>2020-06-12T16:41:22+03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://dm-novikov.github.io/blog/tags/</loc>
     <lastmod>2020-06-12T16:41:22+03:00</lastmod>
   </url>
   

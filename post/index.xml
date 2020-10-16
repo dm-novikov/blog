@@ -22,6 +22,16 @@ SELECT user, value, rank() OVER (ORDER BY value DESC) FROM table    user value r
     </item>
     
     <item>
+      <title>Python: Оптимизация работы с Pandas</title>
+      <link>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</link>
+      <pubDate>Sun, 21 Jun 2020 20:54:03 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</guid>
+      <description>Считывание больших данных Очень полезная возможность Pandas - итерирование по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе).
+data_iter = pd.read_csv(&amp;#39;babynames.csv&amp;#39;, chunksize=1000) def data_prep(df, func): &amp;#34;&amp;#34;&amp;#34; Отфильтруем данные и сложим в другой файлик &amp;#34;&amp;#34;&amp;#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&amp;#39;dataset.csv&amp;#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма Pandas позволяет читать из запакованных данных, снижая тем самым нагрузку на ввод вывод</description>
+    </item>
+    
+    <item>
       <title>SQL: меняем массивы на JSON в ClikHouse</title>
       <link>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</link>
       <pubDate>Fri, 12 Jun 2020 16:41:22 +0300</pubDate>
