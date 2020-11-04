@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="Dev: Кликстрим для бедных">
+<meta itemprop="description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор.">
+<meta itemprop="datePublished" content="2020-11-03T22:18:19&#43;03:00" />
+<meta itemprop="dateModified" content="2020-11-03T22:18:19&#43;03:00" />
+<meta itemprop="wordCount" content="1500">
+<meta itemprop="image" content="https://dm-novikov.github.io/blog/images"/>
+
+
+
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Dev: Кликстрим для бедных" />
+<meta property="og:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dm-novikov.github.io/blog/post/clickstream/" />
+<meta property="og:image" content="https://dm-novikov.github.io/blog/images"/>
+<meta property="article:published_time" content="2020-11-03T22:18:19+03:00" />
+<meta property="article:modified_time" content="2020-11-03T22:18:19+03:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://dm-novikov.github.io/blog/images"/>
+
+<meta name="twitter:title" content="Dev: Кликстрим для бедных"/>
+<meta name="twitter:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор."/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png">
+	<link rel="manifest" href="/blog/site.webmanifest">
+	<link rel="mask-icon" href="/blog/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/blog/favicon.ico">
+
+	<title>Dev: Кликстрим для бедных</title>
+	<link rel="stylesheet" href="https://dm-novikov.github.io/blog/css/style.min.83c65fd4e1f670336c2bfd8a664b4db2f527b644b4214f0311f8e006ff065556.css" integrity="sha256-g8Zf1OH2cDNsK/2KZktNsvUntkS0IU8DEfjgBv8GVVY=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://dm-novikov.github.io/blog">Dmitriy Novikov</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://dm-novikov.github.io/blog/about/">Resume</a>
+				<a href="https://dm-novikov.github.io/blog/post/">Blog</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://www.linkedin.com/in/dmitriy-novikov-304b87199/" target="_blank" rel="noopener me" title="Linkedin"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a><a href="https://www.facebook.com/strowitzki/" target="_blank" rel="noopener me" title="Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a><a href="https://github.com/dm-novikov" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></span><button id="menu-btn" class="hdr-btn" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://dm-novikov.github.io/blog/about/">Resume</a></li>
+			<li><a href="https://dm-novikov.github.io/blog/post/">Blog</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>Dev: Кликстрим для бедных</h1>
+		<div class="content">
+			<h2 id="что-такое-и-зачем-нужно">Что такое и зачем нужно?<a href="#что-такое-и-зачем-нужно" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.</p>
+<p><img src="../clickstream.jpg" alt="as"></p>
+<p>В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:</p>
+<ol>
+<li>Это круто! Серьезно это очень круто и такой опыт отлично себя продает</li>
+<li>Можно избавиться от семплирования в GA</li>
+<li>Можно использовать для моделей машинного обучения в реал тайме (например рекомендательные системы)</li>
+</ol>
+<h2 id="что-нам-нужно-и-как-мы-это-будем-строить">Что нам нужно и как мы это будем строить<a href="#что-нам-нужно-и-как-мы-это-будем-строить" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p><img src="../my_clickstream.jpg" alt="as"></p>
+<p>Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером/ETL) и писать все это в data store(ClickHouse). Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.</p>
+<h2 id="а-теперь-по-порядку">А теперь по порядку<a href="#а-теперь-по-порядку" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="события-на-сайте-и-gtm">События на сайте и GTM<a href="#события-на-сайте-и-gtm" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>По факту во время посещения сайта пользователь что то отправляет и что то плучает, например с помощью простого JS кода мы можем среагировать на нажатие кнопки, или отправки формы на сервер, или перезагрузки страницы, мы можем также записать в куку пользователя его какой-то сгенерирвоанный идентифкатор и например идентифкатор сессии. Примерно этим занимаются веб счетчики, они из коробки умеют размечать сесии и пользователей, а также реагировать на перезагрузку страницы и некоторые другие действия, например прокрутку страницы или клики на некоторую область экрана (отсюда кстати и появляется информация в веб визоре яндекса). GTM предоставляет очень удобный UI для описания того на что и как должен реагировать веб счетчик, например внутри GTM можно настроить отправку события в веб метрику при нажатии на кнопку отправки почты. Вообще про GTM можно говорить очень много, я оставлю пару ссылок на того кто знает про него гораздо больше <a href="https://www.simoahava.com/">раз</a> и <a href="https://osipenkov.ru/analytics/">два</a>.</p>
+<p>Итак я надеюсь вы сами справитесь с тем чтобы его установить и настроить, я начну сразу с того момента как мы настраивем клиентский скрипт для отправки данных куда то&hellip;</p>
+<p>Создадим тег GA, в тег нужно передать идентифкатор вашего счетчика GA
+<img src="../ga_tag.png" alt="as"></p>
+<p>Для активации тега нужны тригеры, их создаем отдельно, можно сразу несколько, реагировать мы будем на любое из них
+<img src="../ga_trigger.png" alt="as"></p>
+<p>После нескольких итераций вы получите что то в таком духе (я не сильно подробно останавливаюсь на этом вопросе, я уверен что с этим вы можете разобраться без меня, главное что вы должны получить это поток событий в GA, а скоро мы попросим их отправлять на наш сервер)</p>
+<p><img src="../ga_params.png" alt="as"></p>
+<h4 id="custom-task-и-свой-код">Custom task и свой код<a href="#custom-task-и-свой-код" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>Механизм Custom task это не какой то хак или баг, информация про это есть на самом сайте гугла, так что использовать его не восбраняется. Вот <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks">ссылочка</a> где вы можете с этим ознакомиться.</p>
+<p>Итак нам нужно создать переменную &ldquo;Собственный JS код&rdquo; который будет перехватывать данные и отправлять куда нужно.</p>
+<p><img src="../custom_task_send.png" alt="as"></p>
+<p>Вот пример кода который перехватывает события GA, обогащает их и отправляет дальше.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">model</span><span class="p">)</span> <span class="p">{</span>    
+    <span class="kd">var</span> <span class="nx">globalSendTaskName</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nx">model</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;trackingId&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_sendHitTask&#39;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">originalSendHitTask</span> <span class="o">=</span> <span class="nb">window</span><span class="p">[</span><span class="nx">globalSendTaskName</span><span class="p">]</span> <span class="o">=</span> <span class="nb">window</span><span class="p">[</span><span class="nx">globalSendTaskName</span><span class="p">]</span> <span class="o">||</span> <span class="nx">model</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;sendHitTask&#39;</span><span class="p">);</span>
+    
+    
+    <span class="nx">model</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;sendHitTask&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sendModel</span><span class="p">)</span> <span class="p">{</span>      
+      
+      <span class="c1">// Собираем кучу всего ненужного
+</span><span class="c1"></span>      <span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="s2">&#34;payload&#34;</span><span class="o">:</span> <span class="nx">sendModel</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;hitPayload&#39;</span><span class="p">),</span> 
+                                    <span class="s2">&#34;user_agent&#34;</span><span class="o">:</span> <span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">),</span>
+                                    <span class="s2">&#34;referrer&#34;</span><span class="o">:</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">referrer</span><span class="p">),</span>
+                                    <span class="s2">&#34;event_time&#34;</span><span class="o">:</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">(),</span>
+                                    <span class="s2">&#34;cookies&#34;</span><span class="o">:</span> <span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span><span class="p">,</span>
+                                    <span class="s2">&#34;localStorage&#34;</span><span class="o">:</span> <span class="nx">localStorage</span><span class="p">})</span>
+      
+      <span class="nx">originalSendHitTask</span><span class="p">(</span><span class="nx">sendModel</span><span class="p">);</span>
+      
+      <span class="c1">// Отправка данных 
+</span><span class="c1"></span>      <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s2">&#34;POST&#34;</span><span class="p">,</span> <span class="o">&lt;</span><span class="nx">YOUR</span> <span class="nx">HOST</span><span class="o">&gt;</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span> 
+      <span class="nx">request</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">);</span>
+      <span class="c1">// Креды только в таком виде base64(login:pass)
+</span><span class="c1"></span>      <span class="nx">request</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s2">&#34;Authorization&#34;</span><span class="p">,</span> <span class="o">&lt;</span><span class="nx">YOUR</span> <span class="nx">AUTH</span><span class="o">&gt;</span><span class="p">);</span>
+      <span class="c1">// Настройки для RabbitMQ
+</span><span class="c1"></span>      <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="s2">&#34;properties&#34;</span><span class="o">:</span><span class="p">{</span><span class="s2">&#34;delivery_mode&#34;</span><span class="o">:</span><span class="mi">2</span><span class="p">},</span><span class="s2">&#34;routing_key&#34;</span><span class="o">:&lt;</span><span class="nx">YOUR</span> <span class="nx">KEY</span><span class="o">&gt;</span><span class="p">,</span><span class="s2">&#34;payload&#34;</span><span class="o">:</span> <span class="nx">message</span><span class="p">,</span><span class="s2">&#34;payload_encoding&#34;</span><span class="o">:</span><span class="s2">&#34;string&#34;</span><span class="p">});</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">params</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div><p>Последний пункт нашего клиента это добавить поле в список задач для исполнения, изменяем тег GA и добавляем нашу переменную как на картинке.</p>
+<p><img src="../field_custom_task.png" alt="as"></p>
+<p>Немного по пропускам в коде, я подозреваю что у вас есть RabbitMQ или же если нет мы его скоро настроим, но &ldquo;YOUR HOST&rdquo; это всего лишь хост вашего обменника (exchange), &ldquo;YOUR AUTH&rdquo; это логин пароль в формате <em>base64(login:pass)</em> можно получить это значнеие вот <a href="https://www.base64decode.org/">тут</a>.</p>
+<h3 id="веб-сервер-что-выбрать">Веб сервер, что выбрать?<a href="#веб-сервер-что-выбрать" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, было бы неплохо повесить на него домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTP -&gt; HTTPS (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Допустим вы поставили Docker и docker-compose, вот <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru">docker</a>, <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru">compose</a> настройки этих сервисов под убунту.</p>
+<p>Хорошо, настраиваем инфроструктуру под все это дело.</p>
+<p>Создаем Dockerfile и пишем следующее, это будет наш еще не готовый консьюмер, его мы напишем чуть позже.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">FROM python:3.6.2
+
+RUN mkdir -p /usr/src
+WORKDIR /usr/src
+
+COPY requirements.txt /usr/src/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /usr/src
+
+VOLUME /usr/src/data
+
+CMD <span class="o">[</span> <span class="s2">&#34;python&#34;</span>, <span class="s2">&#34;./consumer.py&#34;</span> <span class="o">]</span>
+</code></pre></div><p>Тепрь создадим requirements.txt</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pika</span><span class="o">==</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">clickhouse</span><span class="o">-</span><span class="n">driver</span><span class="o">==</span><span class="mf">0.1</span><span class="o">.</span><span class="mi">5</span>
+</code></pre></div><p>Теперь добавим сам скрипт консьюмера consumer.py</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pika</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">clickhouse_driver</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="o">&lt;</span><span class="n">YOUR</span> <span class="n">PARAMS</span><span class="o">&gt;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Consumer</span><span class="p">:</span>
+
+    <span class="n">_GLOBAL_LIST</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span>
+                 <span class="n">virtual_host</span><span class="p">,</span>
+                 <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">virtual_host</span> <span class="o">=</span> <span class="n">virtual_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">PlainCredentials</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span>
+                 <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span>
+                 <span class="n">length_queue</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+
+
+        <span class="c1"># Append new message to global list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;insert_time&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>\
+                                  <span class="s1">&#39;headers&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">headers</span><span class="p">),</span>\
+                                  <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;production&#39;</span><span class="p">,</span>\
+                                  <span class="s1">&#39;params_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body</span><span class="p">),</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">)})</span>
+
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="p">)</span> <span class="o">==</span> <span class="n">length_queue</span> <span class="ow">or</span> 
+            <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">minute</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">500</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;INSERT INTO &lt;TABLE&gt; (insert_time, headers, queue, params_json) VALUES&#39;</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/file_&#39;</span> <span class="o">+</span> \
+                              <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()))</span> <span class="o">+</span> \
+                              <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+                        <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Ошибка:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Ошибка:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue</span><span class="p">):</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span>
+            <span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+                                      <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                                      <span class="n">virtual_host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">virtual_host</span><span class="p">,</span>
+                                      <span class="n">credentials</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">))</span>
+
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+        <span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="n">queue</span><span class="p">,</span>
+                              <span class="n">on_message_callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span>
+                              <span class="n">auto_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">consumer_rk</span> <span class="o">=</span> <span class="n">ConsumerRkeeperLite</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;rabbitmq&#39;</span><span class="p">,</span>
+                                      <span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">,</span>
+                                      <span class="n">virtual_host</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">,</span>
+                                      <span class="n">user</span><span class="o">=&lt;</span><span class="n">YOUR</span> <span class="n">PARAMS</span><span class="o">&gt;</span><span class="p">,</span>
+                                      <span class="n">password</span><span class="o">=&lt;</span><span class="n">YOUR</span> <span class="n">PARAMS</span><span class="o">&gt;</span><span class="p">)</span>
+
+    <span class="n">consumer_rk</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="o">&lt;</span><span class="n">YOUR</span> <span class="n">QUEUE</span><span class="o">&gt;</span><span class="p">)</span>
+</code></pre></div><p>Скрипт простой до ужаса, не самый надежный чесн говоря, но для старта подойдет, мы просто читаем в потоке сообщения и достигая неких лимитов пишем их в Кликхаус, который стоит на удаленном сервере(вообще конечно размещать клик и кролика на одной машине плохая мысль, поэтому сразу разделяйте их, иначе будет больно), но если не смогли записать то пишем данные в файл на диске.</p>
+<p>Чуть не забыли добавить конфиг кролика, это один из самых важных файлов, если не создать этот файл и не указать что можно обращаться со всех сайтов то у вас ничего не получится, это проблемы <a href="https://learn.javascript.ru/xhr-crossdomain">CORS</a>, данная настройка разрешает всем сайтам обращаться в кролика, то что нам и нужно.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">management.cors.allow_origins.1 <span class="o">=</span> *
+</code></pre></div><p>Теперь сделаем сборку всех наших сервисов.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">version: <span class="s1">&#39;2&#39;</span>
+
+services:
+  rabbitmq:
+    image: <span class="s1">&#39;bitnami/rabbitmq:latest&#39;</span>
+    volumes:
+      - /home/storage:/bitnami
+      - /home/etc:/bitnami/rabbitmq/conf/
+    ports:
+      - <span class="s1">&#39;15672:15672&#39;</span>
+      - <span class="s1">&#39;5672:5672&#39;</span>
+    environment:
+      - <span class="nv">RABBITMQ_USERNAME</span><span class="o">=</span>name
+      - <span class="nv">RABBITMQ_PASSWORD</span><span class="o">=</span>pass
+    restart: always
+  consumer:
+    image: <span class="s1">&#39;consumer&#39;</span>
+    build: <span class="s1">&#39;./&#39;</span>
+    depends_on:
+      - rabbitmq
+    restart: always
+    volumes:
+      - /home/volumes:/usr/src/data
+    ports:
+      - <span class="s1">&#39;8000:8000&#39;</span>
+</code></pre></div><p>По идеи в этот момент события с клиента начнут поступать в кролика, а из кролика читаться в кликхаус, но мы кое что забыли, а именно кликхаус&hellip;</p>
+<h3 id="кликхаус-и-etl-в-одном-лице">Кликхаус и ETL в одном лице<a href="#кликхаус-и-etl-в-одном-лице" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>Я не буду вас учить раскатывать кликхаус, инфы про это, ну очень много, будем считать что он есть. я покажу лишь механизм который использую сам для настройки &ldquo;бесшовного&rdquo; ETL.</p>
+<p><img src="../mv_click.jpg" alt="as"></p>
+<p>У кликхауса есть инструмент, который тригерится на вставку данных и позволяет обработать небольшой кусок, это очень полезно и удобно. Сделаем Null таблицу, такая таблица позволяет только реагировать на вставку данных и не хранит их у себя, это удобно, хотя и нужно быть остороным!</p>
+<div class="highlight"><pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="k">table</span> <span class="n">table1</span>
+<span class="p">(</span>
+ <span class="n">insert_time</span> <span class="n">DateTime</span><span class="p">,</span> 
+ <span class="n">headers</span> <span class="n">String</span><span class="p">,</span> 
+ <span class="n">queue</span> <span class="n">String</span><span class="p">,</span> 
+ <span class="n">params_json</span> <span class="n">String</span>         
+<span class="p">)</span> <span class="n">engine</span> <span class="o">=</span> <span class="k">Null</span><span class="p">;</span>
+</code></pre></div><p>Теперь на такую таблицу можно навесть MV</p>
+<div class="highlight"><pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="o">&lt;</span><span class="k">TABLE</span><span class="o">&gt;</span>
+<span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MergeTree</span><span class="p">()</span> <span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">toYYYYMM</span><span class="p">(</span><span class="n">insert_time</span><span class="p">)</span> 
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">insert_time</span> <span class="n">SETTINGS</span> <span class="n">index_granularity</span> <span class="o">=</span> <span class="mi">8192</span> <span class="k">AS</span>
+<span class="k">SELECT</span> <span class="n">visitParamsString</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="k">key</span><span class="p">)</span> <span class="p">...</span> <span class="err">и</span> <span class="err">тд</span>
+<span class="k">FROM</span> <span class="n">table1</span> <span class="o">#</span> <span class="err">Это</span> <span class="k">Null</span> <span class="err">таблица</span>
+</code></pre></div><p>Запрос пишется в соответствии с теми данными которые вы отправляете, но предназначин для разбора большого JSON на одинарные колонки, старайтесь разбирать ваши данные именно так.</p>
+<p>В целом это все, но есть небольшое послесловие.</p>
+<h3 id="проблемы-и-минусы-подхода">Проблемы и минусы подхода<a href="#проблемы-и-минусы-подхода" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<ol>
+<li>GTM плохо работает с мозилой, есть шанс упустить много данных</li>
+<li>Будьте осторожны! GTM == ПРОД, не заставляйте ваших админом и разрабов вас ругать</li>
+<li>HTTP медленней чем нативный протокол AMQP</li>
+<li>Можно накосячить и заставить пользователей страдать</li>
+</ol>
+<h3 id="плюсы-подхода">Плюсы подхода<a href="#плюсы-подхода" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<ol>
+<li>Простая и быстрая настройка событий, есть куча сайтов где рассказыают как передать в GTM что угодно</li>
+<li>Не нужны разработчики</li>
+</ol>
+<h3 id="что-не-освещалось">Что не освещалось<a href="#что-не-освещалось" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>Я совсем не осветил проблему создания очередей, это можно почерпнуть из ссылок ниже, и безопасности всей затеи, вам нужно понимать что как только вы начинаете отправлять данные с клиента вы по сути даете возможность люому челвоеку отправить что угодно в ваш кролик, тем самым можно столкнуться например с DDos атакой, или же человек нарошно начнет отправлять неверные данные. Будьте осторожны! Пишите фильтры и проверяйте кажлое событие перед вставкой, следите за состоянием вашего кролика и железки на котором он стоит.</p>
+<h3 id="полезные-ссылки">Полезные ссылки<a href="#полезные-ссылки" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<ul>
+<li><a href="https://ru.wikipedia.org/wiki/AMQP#%D0%A2%D1%80%D0%B0%D0%BD%D1%81%D0%BF%D0%BE%D1%80%D1%82%D0%BD%D0%B0%D1%8F_%D0%B0%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0_AMQP">AMQP</a></li>
+<li><a href="https://youtu.be/1LVJ_WcLgF8?t=7505">Про MV</a></li>
+<li><a href="https://www.youtube.com/watch?v=4cWg5FVZV6Y&amp;list=WL&amp;index=3">Про базового кролика</a></li>
+<li><a href="https://www.youtube.com/watch?v=jMZviSKf3QU&amp;t=2363s">То что нужно знать про кролика</a></li>
+<li><a href="https://funprojects.blog/2019/11/08/rabbitmq-rest-api/">Еще один пример решения 1.</a></li>
+<li><a href="https://www.simoahava.com/analytics/snowplow-full-setup-with-google-analytics-tracking/">Еще один пример решения 2.</a></li>
+</ul>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		
+		
+
+		<a href="https://www.youtube.com/playlist?list=PLt_re4pYVwLBySKW7iECIB3-wxhI7mzA-">|̲̅̅●̲̅̅|̲̅̅=̲̅̅|̲̅̅●̲̅̅</a>
+	</footer>
+
+
+
+	<script src="https://dm-novikov.github.io/blog/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

@@ -13,6 +13,7 @@ data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(d
 <meta itemprop="datePublished" content="2020-06-21T20:54:03&#43;03:00" />
 <meta itemprop="dateModified" content="2020-06-21T20:54:03&#43;03:00" />
 <meta itemprop="wordCount" content="650">
+<meta itemprop="image" content="https://dm-novikov.github.io/blog/images"/>
 
 
 
@@ -21,9 +22,12 @@ data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(d
 data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(df, func): &#34;&#34;&#34; Отфильтруем данные и сложим в другой файлик &#34;&#34;&#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&#39;dataset.csv&#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма Pandas позволяет читать из запакованных данных, снижая тем самым нагрузку на ввод вывод" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dm-novikov.github.io/blog/post/pandas_for_everyone/" />
+<meta property="og:image" content="https://dm-novikov.github.io/blog/images"/>
 <meta property="article:published_time" content="2020-06-21T20:54:03+03:00" />
 <meta property="article:modified_time" content="2020-06-21T20:54:03+03:00" />
-<meta name="twitter:card" content="summary"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://dm-novikov.github.io/blog/images"/>
+
 <meta name="twitter:title" content="Python: Оптимизация работы с Pandas"/>
 <meta name="twitter:description" content="Считывание больших данных Очень полезная возможность Pandas - итерирование по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе).
 data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(df, func): &#34;&#34;&#34; Отфильтруем данные и сложим в другой файлик &#34;&#34;&#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&#39;dataset.csv&#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма Pandas позволяет читать из запакованных данных, снижая тем самым нагрузку на ввод вывод"/>

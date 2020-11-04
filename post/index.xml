@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Mon, 12 Oct 2020 22:18:19 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 03 Nov 2020 22:18:19 +0300</lastBuildDate>
     
 	<atom:link href="https://dm-novikov.github.io/blog/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dev: Кликстрим для бедных</title>
+      <link>https://dm-novikov.github.io/blog/post/clickstream/</link>
+      <pubDate>Tue, 03 Nov 2020 22:18:19 +0300</pubDate>
+      
+      <guid>https://dm-novikov.github.io/blog/post/clickstream/</guid>
+      <description>Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор.</description>
+    </item>
     
     <item>
       <title>SQL: задачи с собеседований на Постгресе</title>
