@@ -256,18 +256,26 @@ SELECT user, value, rank() OVER (ORDER BY value DESC) FROM table    user value r
 <span class="k">FROM</span> <span class="k">table</span> <span class="n">t1</span>
 </code></pre></div><p>Теперь вычтем смещение и посмотрим разницу между 2 повторяющимися значениями, после чего применим функцию камулятивной суммы, это как раз таки и даст необходимый нам результат.</p>
 <div class="highlight"><pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="o">*</span><span class="p">,</span> 
-       <span class="k">sum</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="n">over</span> <span class="p">(</span><span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">t3</span><span class="p">.</span><span class="k">user</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">t3</span><span class="p">.</span><span class="k">user</span> <span class="k">rows</span> <span class="k">between</span> <span class="n">unbounded</span> <span class="n">preceding</span> <span class="k">and</span> <span class="k">current</span> <span class="k">row</span><span class="p">)</span> <span class="k">as</span> <span class="n">sessions</span>
+       <span class="k">sum</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="n">over</span> <span class="p">(</span><span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">t3</span><span class="p">.</span><span class="k">user</span> 
+                     <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">t3</span><span class="p">.</span><span class="k">user</span> <span class="k">rows</span> 
+                     <span class="k">between</span> <span class="n">unbounded</span> <span class="n">preceding</span> <span class="k">and</span> <span class="k">current</span> <span class="k">row</span><span class="p">)</span> <span class="k">as</span> <span class="n">sessions</span>
 <span class="k">from</span> <span class="p">(</span>
          <span class="k">select</span> <span class="n">t2</span><span class="p">.</span><span class="k">user</span><span class="p">,</span>
                 <span class="n">login</span><span class="p">,</span>
                 <span class="k">case</span>
-                    <span class="k">when</span> <span class="p">(</span><span class="n">login</span><span class="o">-</span><span class="n">prev_log</span><span class="p">)</span> <span class="o">&gt;</span> <span class="s1">&#39;0 years 0 mons 0 days 0 hours 5 mins 0.00 secs&#39;</span> <span class="k">then</span> <span class="mi">1</span>
+                    <span class="k">when</span> <span class="p">(</span><span class="n">login</span><span class="o">-</span><span class="n">prev_log</span><span class="p">)</span> <span class="o">&gt;</span> <span class="s1">&#39;0 years 
+</span><span class="s1">                                             0 mons 
+</span><span class="s1">                                             0 days 
+</span><span class="s1">                                             0 hours 
+</span><span class="s1">                                             5 mins 
+</span><span class="s1">                                             0.00 secs&#39;</span> <span class="k">then</span> <span class="mi">1</span>
                     <span class="k">else</span> <span class="mi">0</span>
                     <span class="k">end</span> <span class="n">ind</span>
          <span class="k">from</span> <span class="p">(</span>
                   <span class="k">SELECT</span> <span class="n">t1</span><span class="p">.</span><span class="k">user</span><span class="p">,</span>
                          <span class="n">login</span><span class="p">,</span>
-                         <span class="n">lag</span><span class="p">(</span><span class="n">login</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="k">NULL</span><span class="p">)</span> <span class="n">OVER</span> <span class="p">(</span><span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">t1</span><span class="p">.</span><span class="k">user</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">t1</span><span class="p">.</span><span class="k">user</span><span class="p">,</span> <span class="n">login</span><span class="p">)</span> <span class="n">prev_log</span>
+                         <span class="n">lag</span><span class="p">(</span><span class="n">login</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="k">NULL</span><span class="p">)</span> <span class="n">OVER</span> <span class="p">(</span><span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">t1</span><span class="p">.</span><span class="k">user</span> 
+                                                   <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">t1</span><span class="p">.</span><span class="k">user</span><span class="p">,</span> <span class="n">login</span><span class="p">)</span> <span class="n">prev_log</span>
                   <span class="k">FROM</span> <span class="k">table</span> <span class="n">t1</span><span class="p">)</span> <span class="n">t2</span>
      <span class="p">)</span> <span class="n">t3</span>
 </code></pre></div><table>

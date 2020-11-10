@@ -18,7 +18,7 @@
       
       <guid>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</guid>
       <description>Считывание больших данных Очень полезная возможность Pandas - итерирование по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе).
-data_iter = pd.read_csv(&amp;#39;babynames.csv&amp;#39;, chunksize=1000) def data_prep(df, func): &amp;#34;&amp;#34;&amp;#34; Отфильтруем данные и сложим в другой файлик &amp;#34;&amp;#34;&amp;#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&amp;#39;dataset.csv&amp;#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма Pandas позволяет читать из запакованных данных, снижая тем самым нагрузку на ввод вывод</description>
+data_iter = pd.read_csv(&amp;#39;babynames.csv&amp;#39;, chunksize=1000) def data_prep(df, func): &amp;#34;&amp;#34;&amp;#34; Отфильтруем данные и сложим в другой файлик &amp;#34;&amp;#34;&amp;#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&amp;#39;dataset.csv&amp;#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма При считываении таблицы в pandas есть возможность повлиять на размер занимаемых данных путем снижения количества выделяемой памяти, но с этим нужно быть осторожным, если у вас очень большие числа, то снижение 64 бит до 32 может попросту вызвать переполнение и неверные данные.</description>
     </item>
     
   </channel>
