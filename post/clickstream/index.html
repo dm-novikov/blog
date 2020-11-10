@@ -262,7 +262,7 @@ services:
   rabbitmq:
     image: <span class="s1">&#39;bitnami/rabbitmq:latest&#39;</span>
     volumes:
-      - /home/storage:/bitnami
+      - /home/storage_rabbit:/bitnami
       - /home/etc:/bitnami/rabbitmq/conf/
     ports:
       - <span class="s1">&#39;15672:15672&#39;</span>
@@ -278,7 +278,7 @@ services:
       - rabbitmq
     restart: always
     volumes:
-      - /home/volumes:/usr/src/data
+      - /storage_consumer:/usr/src/data
     ports:
       - <span class="s1">&#39;8000:8000&#39;</span>
 </code></pre></div><p>Ну и собственно после всего этого</p>
