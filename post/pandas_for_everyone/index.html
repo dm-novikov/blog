@@ -12,7 +12,7 @@
 data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(df, func): &#34;&#34;&#34; Отфильтруем данные и сложим в другой файлик &#34;&#34;&#34; for chunk in df: tmp = func(chunk) tmp.to_csv(&#39;dataset.csv&#39;) def func_filter(data): return data.head(5) data_prep(data_iter, func_filter) Понижение размера дата фрейма При считываении таблицы в pandas есть возможность повлиять на размер занимаемых данных путем снижения количества выделяемой памяти, но с этим нужно быть осторожным, если у вас очень большие числа, то снижение 64 бит до 32 может попросту вызвать переполнение и неверные данные.">
 <meta itemprop="datePublished" content="2020-06-21T20:54:03&#43;03:00" />
 <meta itemprop="dateModified" content="2020-06-21T20:54:03&#43;03:00" />
-<meta itemprop="wordCount" content="615">
+<meta itemprop="wordCount" content="613">
 <meta itemprop="image" content="https://dm-novikov.github.io/blog/images"/>
 
 
@@ -126,7 +126,7 @@ data_iter = pd.read_csv(&#39;babynames.csv&#39;, chunksize=1000) def data_prep(d
 </code></pre></div><p>Итак что мы сделали? По умолчанию Pandas для каждого значения выделяет 64 бита для Int, мы понизили его до 32 и 16 соответственно. И также поменяли тип <em>Gender</em> на <em>category</em>, данный тип очень полезен если ваш столбец имеет низкую гранулярность, тогда можно существенно снизить объем, дело в том что каждое значение будет закодировано числом, а текст будет лежать как словарь отдельно.</p>
 <p>Итак нам удалось снизить размер в 2 раза, хороший результат!</p>
 <h3 id="парсинг-даты-при-чтении">Парсинг даты при чтении<a href="#парсинг-даты-при-чтении" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
-<p>Корректный разбор дат и тип столбца datetime также может помочь снизить размер вашего датафрейма (в моей практике был реальный случай когда в финансовых данных из 1C, господи прости, дата была в очень странном виде, и распарсилась таким образом что месяц стал днем и все перепуталось). Вообщем указывайте явно, это может быть дальше с точки зрения чтения дата фрейма, но зато очевидно и поможет сократить место на диске.</p>
+<p>Корректный разбор даты и тип столбца datetime который снизит размер вашего DF (в моей практике был реальный случай когда в финансовых данных из 1C, господи прости, дата была в очень странном виде, и распарсилась таким образом что месяц стал днем и все перепуталось). Вообщем указывайте явно, это может быть дольше с точки зрения чтения дата фрейма, но зато очевидно и поможет сократить место на диске.</p>
 <div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">time</span>
 <span class="c1"># Пусть dateutils сам разберется как парсить дату</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;babynames_time_test.csv&#39;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">])</span>
