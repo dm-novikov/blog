@@ -7,19 +7,19 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<meta name="theme-color" content="#494f5c">
 	<meta name="msapplication-TileColor" content="#494f5c">
-<meta itemprop="name" content="Dev: Кликстрим для бедных">
-<meta itemprop="description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
-В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор.">
+<meta itemprop="name" content="Dev: Кликстрим на коленке">
+<meta itemprop="description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как направить данные напрямую в ваш датастор.">
 <meta itemprop="datePublished" content="2020-11-03T22:18:19&#43;03:00" />
 <meta itemprop="dateModified" content="2020-11-03T22:18:19&#43;03:00" />
-<meta itemprop="wordCount" content="1487">
+<meta itemprop="wordCount" content="1492">
 <meta itemprop="image" content="https://dm-novikov.github.io/blog/images"/>
 
 
 
-<meta itemprop="keywords" content="" /><meta property="og:title" content="Dev: Кликстрим для бедных" />
-<meta property="og:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
-В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор." />
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Dev: Кликстрим на коленке" />
+<meta property="og:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как направить данные напрямую в ваш датастор." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dm-novikov.github.io/blog/post/clickstream/" />
 <meta property="og:image" content="https://dm-novikov.github.io/blog/images"/>
@@ -28,9 +28,9 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://dm-novikov.github.io/blog/images"/>
 
-<meta name="twitter:title" content="Dev: Кликстрим для бедных"/>
-<meta name="twitter:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.
-В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор."/>
+<meta name="twitter:title" content="Dev: Кликстрим на коленке"/>
+<meta name="twitter:description" content="Что такое и зачем нужно? Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.
+В статье я покажу как направить данные напрямую в ваш датастор."/>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
@@ -39,7 +39,7 @@
 	<link rel="mask-icon" href="/blog/safari-pinned-tab.svg" color="">
 	<link rel="shortcut icon" href="/blog/favicon.ico">
 
-	<title>Dev: Кликстрим для бедных</title>
+	<title>Dev: Кликстрим на коленке</title>
 	<link rel="stylesheet" href="https://dm-novikov.github.io/blog/css/style.min.83c65fd4e1f670336c2bfd8a664b4db2f527b644b4214f0311f8e006ff065556.css" integrity="sha256-g8Zf1OH2cDNsK/2KZktNsvUntkS0IU8DEfjgBv8GVVY=" crossorigin="anonymous">
 	
 </head>
@@ -73,20 +73,20 @@
 
 
 	<main class="site-main section-inner thin animated fadeIn faster">
-		<h1>Dev: Кликстрим для бедных</h1>
+		<h1>Dev: Кликстрим на коленке</h1>
 		<div class="content">
 			<h2 id="что-такое-и-зачем-нужно">Что такое и зачем нужно?<a href="#что-такое-и-зачем-нужно" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
-<p>Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события проходят независимо от счетчика проходят плюс минус один и тот же путь до конечного пользователя.</p>
+<p>Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.</p>
 <p><img src="../clickstream.jpg" alt="as"></p>
-<p>В статье я покажу как изменить часть про внешний веб сервис и магию, и направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:</p>
+<p>В статье я покажу как направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:</p>
 <ol>
 <li>Это круто! Серьезно это очень круто и такой опыт отлично себя продает</li>
-<li>Можно избавиться от семплирования в GA</li>
+<li>Можно избавиться от семплирования в GA, да и вцелом получить RAW дата (хотя для GA4 уже неактуально, можно стримить прям в BQ)</li>
 <li>Можно использовать для моделей машинного обучения в реал тайме (например рекомендательные системы)</li>
 </ol>
 <h2 id="что-нам-нужно-и-как-мы-это-будем-строить">Что нам нужно и как мы это будем строить<a href="#что-нам-нужно-и-как-мы-это-будем-строить" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <p><img src="../my_clickstream.jpg" alt="as"></p>
-<p>Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером) и писать все это в data store(ClickHouse). Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.</p>
+<p>Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером) и писать все это в data store(ClickHouse), здесь же будет ETL. Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.</p>
 <h2 id="а-теперь-по-порядку">А теперь по порядку<a href="#а-теперь-по-порядку" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <h3 id="события-на-сайте-и-gtm">События на сайте и GTM<a href="#события-на-сайте-и-gtm" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
 <p>По факту во время посещения сайта пользователь что то отправляет и что то плучает, например с помощью простого JS кода мы можем среагировать на нажатие кнопки, или отправки формы на сервер, или перезагрузки страницы, мы можем также записать в куку пользователя его какой-то сгенерирвоанный идентифкатор и например идентифкатор сессии. Примерно этим занимаются веб счетчики, они из коробки умеют размечать сесии и пользователей, а также реагировать на перезагрузку страницы и некоторые другие действия, например прокрутку страницы или клики на некоторую область экрана (отсюда кстати и появляется информация в веб визоре яндекса). GTM предоставляет очень удобный UI для описания того на что и как должен реагировать веб счетчик, например внутри GTM можно настроить отправку события в веб метрику при нажатии на кнопку отправки почты. Вообще про GTM можно говорить очень много, я оставлю пару ссылок на того кто знает про него гораздо больше <a href="https://www.simoahava.com/">раз</a> и <a href="https://osipenkov.ru/analytics/">два</a>.</p>
@@ -135,8 +135,8 @@
 </code></pre></div><p>Последний пункт нашего клиента это добавить поле в список задач для исполнения, изменяем тег GA и добавляем нашу переменную как на картинке.</p>
 <p><img src="../field_custom_task.png" alt="as"></p>
 <p>Немного по пропускам в коде, я подозреваю что у вас есть RabbitMQ или же если нет мы его скоро настроим, но &ldquo;YOUR HOST&rdquo; это всего лишь хост вашего обменника (exchange), &ldquo;YOUR AUTH&rdquo; это логин пароль в формате <em>base64(login:pass)</em> можно получить это значнеие вот <a href="https://www.base64decode.org/">тут</a>.</p>
-<h3 id="веб-сервер-и-инфра">Веб сервер и инфра?<a href="#веб-сервер-и-инфра" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
-<p>На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, нужно повесить кго на домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTPS -&gt; HTTP (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Как их поставть написано здесь: <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru">docker</a>, <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru">compose</a> настройки этих сервисов под убунту.</p>
+<h3 id="веб-сервер-и-инфра">Веб сервер и инфра<a href="#веб-сервер-и-инфра" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, нужно повесить его на домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTPS -&gt; HTTP (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Как их поставть написано здесь: <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru">docker</a>, <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru">compose</a>.</p>
 <p><strong>Хорошо, настраиваем инфроструктуру под все это дело</strong></p>
 <p>Нужно создать следующую ирерахию папок</p>
 <ul>
@@ -206,7 +206,8 @@ CMD <span class="o">[</span> <span class="s2">&#34;python&#34;</span>, <span cla
         <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;insert_time&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>\
                                   <span class="s1">&#39;headers&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">headers</span><span class="p">),</span>\
                                   <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;production&#39;</span><span class="p">,</span>\
-                                  <span class="s1">&#39;params_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body</span><span class="p">),</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">)})</span>
+                                  <span class="s1">&#39;params_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body</span><span class="p">),</span> 
+                                  <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">)})</span>
 
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="p">)</span> <span class="o">==</span> <span class="n">length_queue</span> <span class="ow">or</span> 
@@ -225,7 +226,6 @@ CMD <span class="o">[</span> <span class="s2">&#34;python&#34;</span>, <span cla
                         <span class="bp">self</span><span class="o">.</span><span class="n">_GLOBAL_LIST</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Error:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
-
                 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Error:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue</span><span class="p">):</span>
@@ -321,7 +321,7 @@ services:
 <li>Не нужны разработчики</li>
 </ol>
 <h3 id="что-не-освещалось">Что не освещалось<a href="#что-не-освещалось" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
-<p>Я совсем не осветил проблему создания очередей, это можно почерпнуть из ссылок ниже. И куда важнее безопасности всей затеи, вам нужно понимать что как только вы начинаете отправлять данные с клиента вы по сути даете возможность люому челвоеку отправить что угодно в ваш кролик, тем самым можно столкнуться например с DDos атакой. Будьте осторожны. Не тяните сервер для обмена сообщениями в ваш прод, размещайте его в облаке.</p>
+<p>Я совсем не осветил проблему создания очередей, это можно почерпнуть из ссылок ниже. И куда важнее безопасности всей затеи, вам нужно понимать что как только вы начинаете отправлять данные с клиента вы по сути даете возможность любому человеку отправить что угодно в ваш кролик, тем самым можно столкнуться например с DDos атакой. Будьте осторожны. Не тяните сервер для обмена сообщениями в ваш прод, размещайте его в облаке.</p>
 <h3 id="полезные-ссылки">Полезные ссылки<a href="#полезные-ссылки" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
 <ul>
 <li><a href="https://ru.wikipedia.org/wiki/AMQP#%D0%A2%D1%80%D0%B0%D0%BD%D1%81%D0%BF%D0%BE%D1%80%D1%82%D0%BD%D0%B0%D1%8F_%D0%B0%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0_AMQP">AMQP протокол</a></li>
