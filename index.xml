@@ -54,7 +54,7 @@ data_iter = pd.read_csv(&amp;#39;babynames.csv&amp;#39;, chunksize=1000) def dat
     </item>
     
     <item>
-      <title>SQL: arrayJoin и range в ClickHouse</title>
+      <title>SQL | arrayJoin и range в ClickHouse</title>
       <link>https://dm-novikov.github.io/blog/post/array_join_clickhouse/</link>
       <pubDate>Sat, 30 May 2020 15:00:13 +0300</pubDate>
       
@@ -69,9 +69,11 @@ data_iter = pd.read_csv(&amp;#39;babynames.csv&amp;#39;, chunksize=1000) def dat
       
       <guid>https://dm-novikov.github.io/blog/about/</guid>
       <description>Hello, I am Dmitry.
-I am a data enthusiast, I like ETL and statistics, map-reduce and machine learning. I believe that data help to make the world better. I have experience in marketing, game analytics and a little product analytics.
-My hobbies are comics, travelling and exotic food. Also, I very much times waste on learning.
-Resume Experience  Data Engineer November 2019 - December 2020 (1 year 2 months) | Company: Foodplex</description>
+I am a data enthusiast, I like ETL and statistics, map-reduce and machine learning. I believe that data help to make the world better. I have experience in marketing and product analytics.
+My hobbies are comics, travelling and exotic food.
+Resume Experience  Data Engineer November 2019 - December 2020 (1 year 2 months) | Company: Foodplex
+Principals task
+ Write ETL scripts for DWH (batch and streaming) Administration infrastructure (jupyterhub, airflow, superset) Help analytics in writing SQL and Python Support and administration DB (postgres, clickhouse)  Projects</description>
     </item>
     
     <item>
