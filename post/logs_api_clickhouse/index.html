@@ -10,8 +10,8 @@
   
     <meta name="description" content="Как обмануть Logs API Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде array.
 Вот что по этому поводу сказала поддержка
- На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.
-  Можно взять следующий пример:">
+На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.
+Можно взять следующий пример:">
   
 
 
@@ -80,13 +80,9 @@
 </header>
     <h2 id="как-обмануть-logs-api">Как обмануть Logs API</h2>
 <p>Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде <em>array</em>.</p>
-<p>Вот что по этому поводу сказала поддержка</p>
-<blockquote>
+<p><strong>Вот что по этому поводу сказала поддержка</strong></p>
 <p>На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.</p>
-</blockquote>
-<blockquote>
 <p>Можно взять следующий пример:</p>
-</blockquote>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
     <span style="color:#f92672">&#34;Key1_1&#34;</span>: {
         <span style="color:#f92672">&#34;Key2_1&#34;</span>: [
@@ -101,14 +97,13 @@
     <span style="color:#f92672">&#34;Key1_2&#34;</span>: 
         <span style="color:#e6db74">&#34;Key2_3&#34;</span><span style="color:#960050;background-color:#1e0010">​​​</span>
 }
-</code></pre></div><blockquote>
-<p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
-</blockquote>
+</code></pre></div><p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#ae81ff">1</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey1&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_2&#34;</span>]
 <span style="color:#ae81ff">2</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey2&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_3&#34;</span>]
 <span style="color:#ae81ff">3</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey3&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key3_11&#34;</span>,<span style="color:#e6db74">&#34;Key3_12&#34;</span>,<span style="color:#e6db74">&#34;Key3_21&#34;</span>,<span style="color:#e6db74">&#34;Key3_22&#34;</span>,<span style="color:#e6db74">&#34;&#34;</span>]
 
-</code></pre></div><p>Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)</p>
+</code></pre></div><p><strong>Решение</strong></p>
+<p>Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span>
     <span style="color:#f92672">*</span>,
     <span style="color:#75715e">/*Этот кусочек разбирает строку и преобразует в массивы, если у вас уже массивы можно удалить эту часть*/</span>

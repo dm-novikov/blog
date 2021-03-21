@@ -133,7 +133,7 @@
       
         <h2 id="что-такое-и-зачем-нужно">Что такое и зачем нужно?</h2>
 <p>Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.</p>
-<p><img src="/blog/resources/_gen/images/clickstream.jpg" alt="as"></p>
+<p><img src="/blog/images/clickstream.jpg" alt="as"></p>
 <p>В статье я покажу как направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:</p>
 <ol>
 <li>Это круто! Серьезно это очень круто и такой опыт отлично себя продает</li>
@@ -141,22 +141,22 @@
 <li>Можно использовать для моделей машинного обучения в реал тайме (например рекомендательные системы)</li>
 </ol>
 <h2 id="что-нам-нужно-и-как-мы-это-будем-строить">Что нам нужно и как мы это будем строить</h2>
-<p><img src="../my_clickstream.jpg" alt="as"></p>
+<p>![as]/blog/images/my_clickstream.jpg)</p>
 <p>Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером) и писать все это в data store(ClickHouse), здесь же будет ETL. Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.</p>
 <h2 id="а-теперь-по-порядку">А теперь по порядку</h2>
 <h3 id="события-на-сайте-и-gtm">События на сайте и GTM</h3>
 <p>По факту во время посещения сайта пользователь что то отправляет и что то плучает, например с помощью простого JS кода мы можем среагировать на нажатие кнопки, или отправки формы на сервер, или перезагрузки страницы, мы можем также записать в куку пользователя его какой-то сгенерирвоанный идентифкатор и например идентифкатор сессии. Примерно этим занимаются веб счетчики, они из коробки умеют размечать сесии и пользователей, а также реагировать на перезагрузку страницы и некоторые другие действия, например прокрутку страницы или клики на некоторую область экрана (отсюда кстати и появляется информация в веб визоре яндекса). GTM предоставляет очень удобный UI для описания того на что и как должен реагировать веб счетчик, например внутри GTM можно настроить отправку события в веб метрику при нажатии на кнопку отправки почты. Вообще про GTM можно говорить очень много, я оставлю пару ссылок на того кто знает про него гораздо больше <a href="https://www.simoahava.com/">раз</a> и <a href="https://osipenkov.ru/analytics/">два</a>.</p>
 <p>Итак я надеюсь вы сами справитесь с тем чтобы его установить и настроить, я начну сразу с того момента как мы настраивем клиентский скрипт для отправки данных куда то&hellip;</p>
 <p>Создадим тег GA, в тег нужно передать идентифкатор вашего счетчика GA
-<img src="../ga_tag.png" alt="as"></p>
+<img src="/blog/images/ga_tag.png" alt="as"></p>
 <p>Для активации тега нужны тригеры, их создаем отдельно, можно сразу несколько, реагировать мы будем на любое из них
-<img src="../ga_trigger.png" alt="as"></p>
+<img src="/blog/images/ga_trigger.png" alt="as"></p>
 <p>После нескольких итераций вы получите что то в таком духе (я не сильно подробно останавливаюсь на этом вопросе, я уверен что с этим вы можете разобраться без меня, главное что вы должны получить это поток событий в GA, а скоро мы попросим их отправлять на наш сервер)</p>
-<p><img src="../ga_params.png" alt="as"></p>
+<p><img src="/blog/images/ga_params.png" alt="as"></p>
 <h4 id="custom-task-и-свой-код">Custom task и свой код</h4>
 <p>Механизм Custom task это не какой то хак или баг, информация про это есть на самом сайте гугла, так что использовать его не восбраняется. Вот <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks">ссылочка</a> где вы можете с этим ознакомиться.</p>
 <p>Итак нам нужно создать переменную &ldquo;Собственный JS код&rdquo; который будет перехватывать данные и отправлять куда нужно.</p>
-<p><img src="../custom_task_send.png" alt="as"></p>
+<p><img src="/blog/images/custom_task_send.png" alt="as"></p>
 <p>Вот пример кода который перехватывает события GA, обогащает их и отправляет дальше.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span>() {
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">model</span>) {    
@@ -189,7 +189,7 @@
   };
 }
 </code></pre></div><p>Последний пункт нашего клиента это добавить поле в список задач для исполнения, изменяем тег GA и добавляем нашу переменную как на картинке.</p>
-<p><img src="../field_custom_task.png" alt="as"></p>
+<p><img src="/blog/images/field_custom_task.png" alt="as"></p>
 <p>Немного по пропускам в коде, я подозреваю что у вас есть RabbitMQ или же если нет мы его скоро настроим, но &ldquo;YOUR HOST&rdquo; это всего лишь хост вашего обменника (exchange), &ldquo;YOUR AUTH&rdquo; это логин пароль в формате <em>base64(login:pass)</em> можно получить это значнеие вот <a href="https://www.base64decode.org/">тут</a>.</p>
 <h3 id="веб-сервер-и-инфра">Веб сервер и инфра</h3>
 <p>На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, нужно повесить его на домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTPS -&gt; HTTP (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Как их поставть написано здесь: <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru">docker</a>, <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru">compose</a>.</p>
@@ -342,7 +342,7 @@ services:
 </code></pre></div><p>По идеи в этот момент события с клиента начнут поступать в кролика, а из кролика читаться в кликхаус, но мы кое что забыли, а именно кликхаус&hellip;</p>
 <h3 id="кликхаус-и-etl-в-одном-лице">Кликхаус и ETL в одном лице</h3>
 <p>Я не буду вас учить раскатывать кликхаус, инфы про это, ну очень много, <a href="https://netpoint-dc.com/blog/zapuskaem-server-yandex-clickhouse-v-vide-docker-s-nastroikoi-dlya-obrabotki-bolshogo-obema-dannih/">вот</a>, будем считать что он есть. Я покажу лишь механизм который использую сам для настройки &ldquo;бесшовного&rdquo; ETL.</p>
-<p><img src="../mv_click.jpg" alt="as"></p>
+<p><img src="/blog/images/mv_click.jpg" alt="as"></p>
 <p>У кликхауса есть инструмент, который тригерится на вставку данных и позволяет обработать небольшой кусок, это очень полезно и удобно. Для этого воспользуемся таблицей с движком Null, такая таблица позволяет реагировать на вставку данных и не хранить их.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">create</span> <span style="color:#66d9ef">table</span> <span style="color:#66d9ef">default</span>.<span style="color:#66d9ef">TABLE</span>
 (
@@ -913,13 +913,9 @@ data[<span style="color:#e6db74">&#39;Count&#39;</span>] <span style="color:#f92
       
         <h2 id="как-обмануть-logs-api">Как обмануть Logs API</h2>
 <p>Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде <em>array</em>.</p>
-<p>Вот что по этому поводу сказала поддержка</p>
-<blockquote>
+<p><strong>Вот что по этому поводу сказала поддержка</strong></p>
 <p>На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.</p>
-</blockquote>
-<blockquote>
 <p>Можно взять следующий пример:</p>
-</blockquote>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
     <span style="color:#f92672">&#34;Key1_1&#34;</span>: {
         <span style="color:#f92672">&#34;Key2_1&#34;</span>: [
@@ -934,14 +930,13 @@ data[<span style="color:#e6db74">&#39;Count&#39;</span>] <span style="color:#f92
     <span style="color:#f92672">&#34;Key1_2&#34;</span>: 
         <span style="color:#e6db74">&#34;Key2_3&#34;</span><span style="color:#960050;background-color:#1e0010">​​​</span>
 }
-</code></pre></div><blockquote>
-<p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
-</blockquote>
+</code></pre></div><p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#ae81ff">1</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey1&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_2&#34;</span>]
 <span style="color:#ae81ff">2</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey2&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_3&#34;</span>]
 <span style="color:#ae81ff">3</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey3&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key3_11&#34;</span>,<span style="color:#e6db74">&#34;Key3_12&#34;</span>,<span style="color:#e6db74">&#34;Key3_21&#34;</span>,<span style="color:#e6db74">&#34;Key3_22&#34;</span>,<span style="color:#e6db74">&#34;&#34;</span>]
 
-</code></pre></div><p>Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)</p>
+</code></pre></div><p><strong>Решение</strong></p>
+<p>Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span>
     <span style="color:#f92672">*</span>,
     <span style="color:#75715e">/*Этот кусочек разбирает строку и преобразует в массивы, если у вас уже массивы можно удалить эту часть*/</span>

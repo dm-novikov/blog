@@ -15,7 +15,7 @@
       <guid>https://dm-novikov.github.io/blog/post/clickstream/</guid>
       <description>&lt;h2 id=&#34;что-такое-и-зачем-нужно&#34;&gt;Что такое и зачем нужно?&lt;/h2&gt;
 &lt;p&gt;Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/resources/_gen/images/clickstream.jpg&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/clickstream.jpg&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;В статье я покажу как направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Это круто! Серьезно это очень круто и такой опыт отлично себя продает&lt;/li&gt;
@@ -23,22 +23,22 @@
 &lt;li&gt;Можно использовать для моделей машинного обучения в реал тайме (например рекомендательные системы)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;что-нам-нужно-и-как-мы-это-будем-строить&#34;&gt;Что нам нужно и как мы это будем строить&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;../my_clickstream.jpg&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;![as]/blog/images/my_clickstream.jpg)&lt;/p&gt;
 &lt;p&gt;Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером) и писать все это в data store(ClickHouse), здесь же будет ETL. Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.&lt;/p&gt;
 &lt;h2 id=&#34;а-теперь-по-порядку&#34;&gt;А теперь по порядку&lt;/h2&gt;
 &lt;h3 id=&#34;события-на-сайте-и-gtm&#34;&gt;События на сайте и GTM&lt;/h3&gt;
 &lt;p&gt;По факту во время посещения сайта пользователь что то отправляет и что то плучает, например с помощью простого JS кода мы можем среагировать на нажатие кнопки, или отправки формы на сервер, или перезагрузки страницы, мы можем также записать в куку пользователя его какой-то сгенерирвоанный идентифкатор и например идентифкатор сессии. Примерно этим занимаются веб счетчики, они из коробки умеют размечать сесии и пользователей, а также реагировать на перезагрузку страницы и некоторые другие действия, например прокрутку страницы или клики на некоторую область экрана (отсюда кстати и появляется информация в веб визоре яндекса). GTM предоставляет очень удобный UI для описания того на что и как должен реагировать веб счетчик, например внутри GTM можно настроить отправку события в веб метрику при нажатии на кнопку отправки почты. Вообще про GTM можно говорить очень много, я оставлю пару ссылок на того кто знает про него гораздо больше &lt;a href=&#34;https://www.simoahava.com/&#34;&gt;раз&lt;/a&gt; и &lt;a href=&#34;https://osipenkov.ru/analytics/&#34;&gt;два&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Итак я надеюсь вы сами справитесь с тем чтобы его установить и настроить, я начну сразу с того момента как мы настраивем клиентский скрипт для отправки данных куда то&amp;hellip;&lt;/p&gt;
 &lt;p&gt;Создадим тег GA, в тег нужно передать идентифкатор вашего счетчика GA
-&lt;img src=&#34;../ga_tag.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/ga_tag.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Для активации тега нужны тригеры, их создаем отдельно, можно сразу несколько, реагировать мы будем на любое из них
-&lt;img src=&#34;../ga_trigger.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/ga_trigger.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;После нескольких итераций вы получите что то в таком духе (я не сильно подробно останавливаюсь на этом вопросе, я уверен что с этим вы можете разобраться без меня, главное что вы должны получить это поток событий в GA, а скоро мы попросим их отправлять на наш сервер)&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../ga_params.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/ga_params.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;h4 id=&#34;custom-task-и-свой-код&#34;&gt;Custom task и свой код&lt;/h4&gt;
 &lt;p&gt;Механизм Custom task это не какой то хак или баг, информация про это есть на самом сайте гугла, так что использовать его не восбраняется. Вот &lt;a href=&#34;https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks&#34;&gt;ссылочка&lt;/a&gt; где вы можете с этим ознакомиться.&lt;/p&gt;
 &lt;p&gt;Итак нам нужно создать переменную &amp;ldquo;Собственный JS код&amp;rdquo; который будет перехватывать данные и отправлять куда нужно.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../custom_task_send.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/custom_task_send.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Вот пример кода который перехватывает события GA, обогащает их и отправляет дальше.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;function&lt;/span&gt;() {
   &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;function&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;model&lt;/span&gt;) {    
@@ -71,7 +71,7 @@
   };
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Последний пункт нашего клиента это добавить поле в список задач для исполнения, изменяем тег GA и добавляем нашу переменную как на картинке.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../field_custom_task.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/field_custom_task.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Немного по пропускам в коде, я подозреваю что у вас есть RabbitMQ или же если нет мы его скоро настроим, но &amp;ldquo;YOUR HOST&amp;rdquo; это всего лишь хост вашего обменника (exchange), &amp;ldquo;YOUR AUTH&amp;rdquo; это логин пароль в формате &lt;em&gt;base64(login:pass)&lt;/em&gt; можно получить это значнеие вот &lt;a href=&#34;https://www.base64decode.org/&#34;&gt;тут&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;веб-сервер-и-инфра&#34;&gt;Веб сервер и инфра&lt;/h3&gt;
 &lt;p&gt;На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, нужно повесить его на домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTPS -&amp;gt; HTTP (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Как их поставть написано здесь: &lt;a href=&#34;https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru&#34;&gt;docker&lt;/a&gt;, &lt;a href=&#34;https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru&#34;&gt;compose&lt;/a&gt;.&lt;/p&gt;
@@ -224,7 +224,7 @@ services:
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;По идеи в этот момент события с клиента начнут поступать в кролика, а из кролика читаться в кликхаус, но мы кое что забыли, а именно кликхаус&amp;hellip;&lt;/p&gt;
 &lt;h3 id=&#34;кликхаус-и-etl-в-одном-лице&#34;&gt;Кликхаус и ETL в одном лице&lt;/h3&gt;
 &lt;p&gt;Я не буду вас учить раскатывать кликхаус, инфы про это, ну очень много, &lt;a href=&#34;https://netpoint-dc.com/blog/zapuskaem-server-yandex-clickhouse-v-vide-docker-s-nastroikoi-dlya-obrabotki-bolshogo-obema-dannih/&#34;&gt;вот&lt;/a&gt;, будем считать что он есть. Я покажу лишь механизм который использую сам для настройки &amp;ldquo;бесшовного&amp;rdquo; ETL.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../mv_click.jpg&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/mv_click.jpg&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
 &lt;p&gt;У кликхауса есть инструмент, который тригерится на вставку данных и позволяет обработать небольшой кусок, это очень полезно и удобно. Для этого воспользуемся таблицей с движком Null, такая таблица позволяет реагировать на вставку данных и не хранить их.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;create&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;table&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;default&lt;/span&gt;.&lt;span style=&#34;color:#66d9ef&#34;&gt;TABLE&lt;/span&gt;
 (
@@ -716,13 +716,9 @@ data[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Count&amp;#39;&lt;/span&
       <guid>https://dm-novikov.github.io/blog/post/logs_api_clickhouse/</guid>
       <description>&lt;h2 id=&#34;как-обмануть-logs-api&#34;&gt;Как обмануть Logs API&lt;/h2&gt;
 &lt;p&gt;Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде &lt;em&gt;array&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Вот что по этому поводу сказала поддержка&lt;/p&gt;
-&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Вот что по этому поводу сказала поддержка&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;На самом деле параметры будут парситься от самого &amp;ldquo;нижнего&amp;rdquo; уровня до самого &amp;ldquo;верхнего&amp;rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &amp;ldquo;нижним&amp;rdquo; уровням.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;blockquote&gt;
 &lt;p&gt;Можно взять следующий пример:&lt;/p&gt;
-&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
     &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;Key1_1&amp;#34;&lt;/span&gt;: {
         &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;Key2_1&amp;#34;&lt;/span&gt;: [
@@ -737,14 +733,13 @@ data[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Count&amp;#39;&lt;/span&
     &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;Key1_2&amp;#34;&lt;/span&gt;: 
         &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_3&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;​​​&lt;/span&gt;
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;В указанном примере можно ожидать следующие массивы в ответе Logs API:&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;В указанном примере можно ожидать следующие массивы в ответе Logs API:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ym:pv:parsedParamsKey1&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;-&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key1_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key1_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key1_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key1_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key1_2&amp;#34;&lt;/span&gt;]
 &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ym:pv:parsedParamsKey2&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;-&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_1&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_2&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_2&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key2_3&amp;#34;&lt;/span&gt;]
 &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ym:pv:parsedParamsKey3&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;-&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key3_11&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key3_12&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key3_21&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key3_22&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;]
 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Решение&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;SELECT&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;,
     &lt;span style=&#34;color:#75715e&#34;&gt;/*Этот кусочек разбирает строку и преобразует в массивы, если у вас уже массивы можно удалить эту часть*/&lt;/span&gt;
