@@ -2,63 +2,1586 @@
 <html lang="">
 
 <head>
-	<meta name="generator" content="Hugo 0.71.1" />
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<meta name="theme-color" content="#494f5c">
-	<meta name="msapplication-TileColor" content="#494f5c">
-<meta itemprop="name" content="Dmitriy Novikov">
-<meta itemprop="description" content=""><meta property="og:title" content="Dmitriy Novikov" />
-<meta property="og:description" content="" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://dm-novikov.github.io/blog/" />
-<meta property="og:image" content="https://dm-novikov.github.io/blog/images"/>
-<meta property="og:updated_time" content="2020-11-03T22:18:19+03:00" />
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://dm-novikov.github.io/blog/images"/>
+  <meta charset="utf-8">
 
-<meta name="twitter:title" content="Dmitriy Novikov"/>
-<meta name="twitter:description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png">
-	<link rel="manifest" href="/blog/site.webmanifest">
-	<link rel="mask-icon" href="/blog/safari-pinned-tab.svg" color="">
-	<link rel="shortcut icon" href="/blog/favicon.ico">
 
-	<title>Dmitriy Novikov</title>
-	<link rel="alternate" type="application/rss+xml" href="https://dm-novikov.github.io/blog/index.xml" title="Dmitriy Novikov" />
-	<link rel="stylesheet" href="https://dm-novikov.github.io/blog/css/style.min.83c65fd4e1f670336c2bfd8a664b4db2f527b644b4214f0311f8e006ff065556.css" integrity="sha256-g8Zf1OH2cDNsK/2KZktNsvUntkS0IU8DEfjgBv8GVVY=" crossorigin="anonymous">
-	<style>.bg-img {background-image: url('https://dm-novikov.github.io/blog/images');}</style>
+  
+    
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.71.1" />
+  <title>Dmitriy Novikov</title>
+  <link rel="canonical" href="/blog/">
+
+
+  <link rel="alternate" type="application/rss+xml" href="/blog/index.xml" title="Dmitriy Novikov">
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+    
+    
+    
+    
+    
+  
+    
+    
+    
+      
+      
+    
+    
+    
+  
+    
+    
+    
+      
+      
+    
+    
+    
+  
+    
+    
+    
+      
+      
+    
+    
+    
+  
+    
+    
+    
+      
+      
+    
+    
+    
+  
+
+  
+
+
+  
+  <link rel="stylesheet" href="/blog/css/base.min.c0b9f8cddf565ed020a9a61e2f13378138705636608dc6d0e4fc2703c820213f.css" integrity="sha256-wLn4zd9WXtAgqaYeLxM3gThwVjZgjcbQ5PwnA8ggIT8=" crossorigin="anonymous">
+
+
+
 </head>
 
-<body id="page">
-	
-	<div class="bg-img"></div>
-	<div id="spotlight" class="animated fadeIn">
-		<div id="home-center">
-			<h1 id="home-title">Dmitriy Novikov</h1>
-			
-			<nav id="home-nav" class="site-nav">
-				
-				<a href="https://dm-novikov.github.io/blog/about/">Resume</a>
-				<a href="https://dm-novikov.github.io/blog/post/">Blog</a>
+<body>
+  <nav class="u-background">
+  <div class="u-wrapper">
+    <ul class="Banner">
+      <li class="Banner-item Banner-item--title">
+        <a class="Banner-link u-clickable" href="/blog/">Dmitriy Novikov</a>
+      </li>
+      
+        <li class="Banner-item">
+          <a class="Banner-link u-clickable" href="/blog/about/">About</a>
+        </li>
+      
+        <li class="Banner-item">
+          <a class="Banner-link u-clickable" href="/blog/post/">Posts</a>
+        </li>
+      
+    </ul>
+  </div>
+</nav>
+  <main>
+    <div class="u-wrapper">
+      <div class="u-padding">
+        
 
-			</nav>
-			
-		</div>
-		<a href="https://www.youtube.com/playlist?list=PLt_re4pYVwLBySKW7iECIB3-wxhI7mzA-">|̲̅̅●̲̅̅|̲̅̅=̲̅̅|̲̅̅●̲̅̅</a>
-		<div id="home-footer">
-			
-			
-		</div>
-	</div>
+  
+
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/clickstream/" rel="bookmark">Dev: Кликстрим на коленке</a>
+  </h2>
+  
+    <time datetime="2020-11-03T22:18:19&#43;03:00">3 November, 2020</time>
+  
+</header>
+      
+        <h2 id="что-такое-и-зачем-нужно">Что такое и зачем нужно?</h2>
+<p>Итак, если у вас есть веб сайт скорее всего там стоит какой то готовый инструмент веб аналитики, например GA/YM, или что то более экзотическое, например Matomo(кстати прежде чем рассматривать вариант со своим стримом посмотрите в эту сторону, для мелких сайтов это решение выглядит весьма рабочим). Все отправляемые вами события, независимо от счетчика, проходят плюс минус один и тот же путь до конечного пользователя.</p>
+<p><img src="/blog/resources/_gen/images/clickstream.jpg" alt="as"></p>
+<p>В статье я покажу как направить данные напрямую в ваш датастор. Несколько слов зачем это нужно:</p>
+<ol>
+<li>Это круто! Серьезно это очень круто и такой опыт отлично себя продает</li>
+<li>Можно избавиться от семплирования в GA, да и вцелом получить RAW дата (хотя для GA4 уже неактуально, можно стримить прям в BQ)</li>
+<li>Можно использовать для моделей машинного обучения в реал тайме (например рекомендательные системы)</li>
+</ol>
+<h2 id="что-нам-нужно-и-как-мы-это-будем-строить">Что нам нужно и как мы это будем строить</h2>
+<p><img src="../my_clickstream.jpg" alt="as"></p>
+<p>Вот краткая схема, в моей реализации - мы будем писать напрямую в очередь (RabbitMQ) через HTTP протокол, обрабатыать события простым скриптом (консьюмером) и писать все это в data store(ClickHouse), здесь же будет ETL. Конечно это не самая отказоустойчивая система, тем не менее она может выдерживать небольшие нагрузки и в целом неплохой baseline для расширения вашего кликстрима.</p>
+<h2 id="а-теперь-по-порядку">А теперь по порядку</h2>
+<h3 id="события-на-сайте-и-gtm">События на сайте и GTM</h3>
+<p>По факту во время посещения сайта пользователь что то отправляет и что то плучает, например с помощью простого JS кода мы можем среагировать на нажатие кнопки, или отправки формы на сервер, или перезагрузки страницы, мы можем также записать в куку пользователя его какой-то сгенерирвоанный идентифкатор и например идентифкатор сессии. Примерно этим занимаются веб счетчики, они из коробки умеют размечать сесии и пользователей, а также реагировать на перезагрузку страницы и некоторые другие действия, например прокрутку страницы или клики на некоторую область экрана (отсюда кстати и появляется информация в веб визоре яндекса). GTM предоставляет очень удобный UI для описания того на что и как должен реагировать веб счетчик, например внутри GTM можно настроить отправку события в веб метрику при нажатии на кнопку отправки почты. Вообще про GTM можно говорить очень много, я оставлю пару ссылок на того кто знает про него гораздо больше <a href="https://www.simoahava.com/">раз</a> и <a href="https://osipenkov.ru/analytics/">два</a>.</p>
+<p>Итак я надеюсь вы сами справитесь с тем чтобы его установить и настроить, я начну сразу с того момента как мы настраивем клиентский скрипт для отправки данных куда то&hellip;</p>
+<p>Создадим тег GA, в тег нужно передать идентифкатор вашего счетчика GA
+<img src="../ga_tag.png" alt="as"></p>
+<p>Для активации тега нужны тригеры, их создаем отдельно, можно сразу несколько, реагировать мы будем на любое из них
+<img src="../ga_trigger.png" alt="as"></p>
+<p>После нескольких итераций вы получите что то в таком духе (я не сильно подробно останавливаюсь на этом вопросе, я уверен что с этим вы можете разобраться без меня, главное что вы должны получить это поток событий в GA, а скоро мы попросим их отправлять на наш сервер)</p>
+<p><img src="../ga_params.png" alt="as"></p>
+<h4 id="custom-task-и-свой-код">Custom task и свой код</h4>
+<p>Механизм Custom task это не какой то хак или баг, информация про это есть на самом сайте гугла, так что использовать его не восбраняется. Вот <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks">ссылочка</a> где вы можете с этим ознакомиться.</p>
+<p>Итак нам нужно создать переменную &ldquo;Собственный JS код&rdquo; который будет перехватывать данные и отправлять куда нужно.</p>
+<p><img src="../custom_task_send.png" alt="as"></p>
+<p>Вот пример кода который перехватывает события GA, обогащает их и отправляет дальше.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span>() {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">model</span>) {    
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">globalSendTaskName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;_&#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">model</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;trackingId&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;_sendHitTask&#39;</span>;
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">originalSendHitTask</span> <span style="color:#f92672">=</span> window[<span style="color:#a6e22e">globalSendTaskName</span>] <span style="color:#f92672">=</span> window[<span style="color:#a6e22e">globalSendTaskName</span>] <span style="color:#f92672">||</span> <span style="color:#a6e22e">model</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;sendHitTask&#39;</span>);
+    
+    
+    <span style="color:#a6e22e">model</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;sendHitTask&#39;</span>, <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">sendModel</span>) {      
+      
+      <span style="color:#75715e">// Собираем кучу всего ненужного
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">message</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>({<span style="color:#e6db74">&#34;payload&#34;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">sendModel</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;hitPayload&#39;</span>), 
+                                    <span style="color:#e6db74">&#34;user_agent&#34;</span><span style="color:#f92672">:</span> encodeURIComponent(<span style="color:#a6e22e">navigator</span>.<span style="color:#a6e22e">userAgent</span>),
+                                    <span style="color:#e6db74">&#34;referrer&#34;</span><span style="color:#f92672">:</span>encodeURIComponent(document.<span style="color:#a6e22e">referrer</span>),
+                                    <span style="color:#e6db74">&#34;event_time&#34;</span><span style="color:#f92672">:</span>Date.<span style="color:#a6e22e">now</span>(),
+                                    <span style="color:#e6db74">&#34;cookies&#34;</span><span style="color:#f92672">:</span> document.<span style="color:#a6e22e">cookie</span>,
+                                    <span style="color:#e6db74">&#34;localStorage&#34;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">localStorage</span>})
+      
+      <span style="color:#a6e22e">originalSendHitTask</span>(<span style="color:#a6e22e">sendModel</span>);
+      
+      <span style="color:#75715e">// Отправка данных 
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">XMLHttpRequest</span>();
+      <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">open</span>(<span style="color:#e6db74">&#34;POST&#34;</span>, <span style="color:#f92672">&lt;</span><span style="color:#a6e22e">YOUR</span> <span style="color:#a6e22e">HOST</span><span style="color:#f92672">&gt;</span>, <span style="color:#66d9ef">true</span>); 
+      <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">setRequestHeader</span>(<span style="color:#e6db74">&#39;Content-Type&#39;</span>, <span style="color:#e6db74">&#39;application/json&#39;</span>);
+      <span style="color:#75715e">// Креды только в таком виде base64(login:pass)
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">setRequestHeader</span>(<span style="color:#e6db74">&#34;Authorization&#34;</span>, <span style="color:#f92672">&lt;</span><span style="color:#a6e22e">YOUR</span> <span style="color:#a6e22e">AUTH</span><span style="color:#f92672">&gt;</span>);
+      <span style="color:#75715e">// Настройки для RabbitMQ
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">params</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>({<span style="color:#e6db74">&#34;properties&#34;</span><span style="color:#f92672">:</span>{<span style="color:#e6db74">&#34;delivery_mode&#34;</span><span style="color:#f92672">:</span><span style="color:#ae81ff">2</span>},<span style="color:#e6db74">&#34;routing_key&#34;</span><span style="color:#f92672">:&lt;</span><span style="color:#a6e22e">YOUR</span> <span style="color:#a6e22e">KEY</span><span style="color:#f92672">&gt;</span>,<span style="color:#e6db74">&#34;payload&#34;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">message</span>,<span style="color:#e6db74">&#34;payload_encoding&#34;</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#34;string&#34;</span>});
+      <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">params</span>);
+    });
+  };
+}
+</code></pre></div><p>Последний пункт нашего клиента это добавить поле в список задач для исполнения, изменяем тег GA и добавляем нашу переменную как на картинке.</p>
+<p><img src="../field_custom_task.png" alt="as"></p>
+<p>Немного по пропускам в коде, я подозреваю что у вас есть RabbitMQ или же если нет мы его скоро настроим, но &ldquo;YOUR HOST&rdquo; это всего лишь хост вашего обменника (exchange), &ldquo;YOUR AUTH&rdquo; это логин пароль в формате <em>base64(login:pass)</em> можно получить это значнеие вот <a href="https://www.base64decode.org/">тут</a>.</p>
+<h3 id="веб-сервер-и-инфра">Веб сервер и инфра</h3>
+<p>На самом деле выбор тут реально большой, от простейшего Flask(не стоит) до Fast API(асинхронность из коробки), и очередей таких как Kafka и RabbitMQ. Мы как вы уже поняли поставим кролика. Первое что нам нужно, это железо, я надеюсь оно у вас есть, причем не просто машина которая доступна из сети, нужно повесить его на домен и прописать SSL сертификат, иначе вы стокнетесь с проблемой передачи данных с HTTPS -&gt; HTTP (поверьте, это больно). Также чтобы поставить кролика нам нужен docker, да мы не крутые админы, и контейниризация избавит нас от проблем эксплуатации и особенностей ОС. Как их поставть написано здесь: <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-ru">docker</a>, <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04-ru">compose</a>.</p>
+<p><strong>Хорошо, настраиваем инфроструктуру под все это дело</strong></p>
+<p>Нужно создать следующую ирерахию папок</p>
+<ul>
+<li>home/
+<ul>
+<li>storage_consumer/</li>
+<li>storage_rabbit/</li>
+<li>etc/</li>
+<li>Dockerfile</li>
+<li>consumer.py</li>
+<li>docker-compose.yml</li>
+<li>requirements.txt</li>
+</ul>
+</li>
+</ul>
+<p>Создаем Dockerfile и пишем следующее, это будет наш еще не готовый консьюмер, его мы напишем чуть позже.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">FROM python:3.6.2
+
+RUN mkdir -p /usr/src
+WORKDIR /usr/src
+
+COPY requirements.txt /usr/src/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /usr/src
+
+VOLUME /usr/src/data
+
+CMD <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;python&#34;</span>, <span style="color:#e6db74">&#34;./consumer.py&#34;</span> <span style="color:#f92672">]</span>
+</code></pre></div><p>Тепрь создадим requirements.txt</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">pika<span style="color:#f92672">==</span><span style="color:#ae81ff">1.1</span><span style="color:#f92672">.</span><span style="color:#ae81ff">0</span>
+clickhouse<span style="color:#f92672">-</span>driver<span style="color:#f92672">==</span><span style="color:#ae81ff">0.1</span><span style="color:#f92672">.</span><span style="color:#ae81ff">5</span>
+</code></pre></div><p>Теперь добавим сам скрипт консьюмера consumer.py</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> pika
+<span style="color:#f92672">import</span> time
+<span style="color:#f92672">import</span> json
+<span style="color:#f92672">import</span> traceback
+<span style="color:#f92672">from</span> datetime <span style="color:#f92672">import</span> datetime
+<span style="color:#f92672">from</span> clickhouse_driver <span style="color:#f92672">import</span> Client
+
+client <span style="color:#f92672">=</span> Client(<span style="color:#f92672">&lt;</span>YOUR PARAMS<span style="color:#f92672">&gt;</span>)
 
 
-	<script src="https://dm-novikov.github.io/blog/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
-	
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Consumer</span>:
+
+    _GLOBAL_LIST <span style="color:#f92672">=</span> list()
+
+    <span style="color:#66d9ef">def</span> __init__(self,
+                 host, port,
+                 virtual_host,
+                 user, password):
+        self<span style="color:#f92672">.</span>host <span style="color:#f92672">=</span> host
+        self<span style="color:#f92672">.</span>port <span style="color:#f92672">=</span> port
+        self<span style="color:#f92672">.</span>virtual_host <span style="color:#f92672">=</span> virtual_host
+        self<span style="color:#f92672">.</span>user <span style="color:#f92672">=</span> user
+        self<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> password
+
+        self<span style="color:#f92672">.</span>credentials <span style="color:#f92672">=</span> pika<span style="color:#f92672">.</span>PlainCredentials(self<span style="color:#f92672">.</span>user,
+                                                 self<span style="color:#f92672">.</span>password)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(self, ch, method,
+                 properties, body,
+                 length_queue<span style="color:#f92672">=</span><span style="color:#ae81ff">5000</span>):
+
+
+        <span style="color:#75715e"># Append new message to global list</span>
+        self<span style="color:#f92672">.</span>_GLOBAL_LIST<span style="color:#f92672">.</span>append({<span style="color:#e6db74">&#39;insert_time&#39;</span>: datetime<span style="color:#f92672">.</span>now(),\
+                                  <span style="color:#e6db74">&#39;headers&#39;</span>: json<span style="color:#f92672">.</span>dumps(properties<span style="color:#f92672">.</span>headers),\
+                                  <span style="color:#e6db74">&#39;queue&#39;</span>: <span style="color:#e6db74">&#39;production&#39;</span>,\
+                                  <span style="color:#e6db74">&#39;params_json&#39;</span>: json<span style="color:#f92672">.</span>dumps(json<span style="color:#f92672">.</span>loads(body), 
+                                  ensure_ascii<span style="color:#f92672">=</span>False)})
+
+
+        <span style="color:#66d9ef">if</span> (len(self<span style="color:#f92672">.</span>_GLOBAL_LIST) <span style="color:#f92672">==</span> length_queue <span style="color:#f92672">or</span> 
+            (datetime<span style="color:#f92672">.</span>now()<span style="color:#f92672">.</span>minute <span style="color:#f92672">%</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#f92672">and</span> len(self<span style="color:#f92672">.</span>_GLOBAL_LIST) <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">500</span>):
+            <span style="color:#66d9ef">try</span>:
+                client<span style="color:#f92672">.</span>execute(<span style="color:#e6db74">&#39;INSERT INTO &lt;TABLE&gt; (insert_time, headers, queue, params_json) VALUES&#39;</span>,
+                               self<span style="color:#f92672">.</span>_GLOBAL_LIST)
+                self<span style="color:#f92672">.</span>_GLOBAL_LIST<span style="color:#f92672">.</span>clear()
+                time<span style="color:#f92672">.</span>sleep(<span style="color:#ae81ff">1</span>)
+            <span style="color:#66d9ef">except</span>:
+                <span style="color:#66d9ef">try</span>:
+                    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;data/file_&#39;</span> <span style="color:#f92672">+</span> \
+                              str(hash(datetime<span style="color:#f92672">.</span>now())) <span style="color:#f92672">+</span> \
+                              <span style="color:#e6db74">&#39;.txt&#39;</span>, <span style="color:#e6db74">&#39;a&#39;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf8&#39;</span>) <span style="color:#66d9ef">as</span> file:
+                        file<span style="color:#f92672">.</span>write(str(self<span style="color:#f92672">.</span>_GLOBAL_LIST))
+                        self<span style="color:#f92672">.</span>_GLOBAL_LIST<span style="color:#f92672">.</span>clear()
+                <span style="color:#66d9ef">except</span>:
+                    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Error:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, traceback<span style="color:#f92672">.</span>format_exc())
+                <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Error:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, traceback<span style="color:#f92672">.</span>format_exc())
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">listen</span>(self, queue):
+        connection <span style="color:#f92672">=</span> pika<span style="color:#f92672">.</span>BlockingConnection(
+            pika<span style="color:#f92672">.</span>ConnectionParameters(host<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>host,
+                                      port<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>port,
+                                      virtual_host<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>virtual_host,
+                                      credentials<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>credentials))
+
+        channel <span style="color:#f92672">=</span> connection<span style="color:#f92672">.</span>channel()
+
+        channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue,
+                              on_message_callback<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>callback,
+                              auto_ack<span style="color:#f92672">=</span>True)
+
+        channel<span style="color:#f92672">.</span>start_consuming()
+
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+    consumer_rk <span style="color:#f92672">=</span> ConsumerRkeeperLite(host<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rabbitmq&#39;</span>,
+                                      port<span style="color:#f92672">=</span><span style="color:#ae81ff">5672</span>,
+                                      virtual_host<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;/&#39;</span>,
+                                      user<span style="color:#f92672">=&lt;</span>YOUR PARAMS<span style="color:#f92672">&gt;</span>,
+                                      password<span style="color:#f92672">=&lt;</span>YOUR PARAMS<span style="color:#f92672">&gt;</span>)
+
+    consumer_rk<span style="color:#f92672">.</span>listen(<span style="color:#f92672">&lt;</span>YOUR QUEUE<span style="color:#f92672">&gt;</span>)
+</code></pre></div><p>Скрипт простой до ужаса, и не самый надежный чесн говоря, но для старта подойдет, мы просто читаем в потоке сообщения и достигая неких лимитов пишем их в Кликхаус, который стоит на удаленном сервере(вообще конечно размещать клик и кролика на одной машине плохая мысль, поэтому сразу разделяйте их, иначе будет больно), но если не смогли записать то пишем данные в файл на диске.</p>
+<p>Чуть не забыли добавить конфиг кролика, это один из самых важных файлов, если не создать этот файл и не указать что можно обращаться со всех сайтов то у вас ничего не получится, это проблемы <a href="https://learn.javascript.ru/xhr-crossdomain">CORS</a>, данная настройка разрешает всем сайтам обращаться в кролика, то что нам и нужно. Эта настройка меняется в конфиге /etc.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">management.cors.allow_origins.1 <span style="color:#f92672">=</span> *
+</code></pre></div><p>Теперь сделаем сборку всех наших сервисов.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">version: <span style="color:#e6db74">&#39;2&#39;</span>
+
+services:
+  rabbitmq:
+    image: <span style="color:#e6db74">&#39;bitnami/rabbitmq:latest&#39;</span>
+    volumes:
+      - /home/storage_rabbit:/bitnami
+      - /home/etc:/bitnami/rabbitmq/conf/
+    ports:
+      - <span style="color:#e6db74">&#39;15672:15672&#39;</span>
+      - <span style="color:#e6db74">&#39;5672:5672&#39;</span>
+    environment:
+      - RABBITMQ_USERNAME<span style="color:#f92672">=</span>name
+      - RABBITMQ_PASSWORD<span style="color:#f92672">=</span>pass
+    restart: always
+  consumer:
+    image: <span style="color:#e6db74">&#39;consumer&#39;</span>
+    build: <span style="color:#e6db74">&#39;./&#39;</span>
+    depends_on:
+      - rabbitmq
+    restart: always
+    volumes:
+      - /storage_consumer:/usr/src/data
+    ports:
+      - <span style="color:#e6db74">&#39;8000:8000&#39;</span>
+</code></pre></div><p>Ну и собственно после всего этого</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo docker-compose up -d
+</code></pre></div><p>По идеи в этот момент события с клиента начнут поступать в кролика, а из кролика читаться в кликхаус, но мы кое что забыли, а именно кликхаус&hellip;</p>
+<h3 id="кликхаус-и-etl-в-одном-лице">Кликхаус и ETL в одном лице</h3>
+<p>Я не буду вас учить раскатывать кликхаус, инфы про это, ну очень много, <a href="https://netpoint-dc.com/blog/zapuskaem-server-yandex-clickhouse-v-vide-docker-s-nastroikoi-dlya-obrabotki-bolshogo-obema-dannih/">вот</a>, будем считать что он есть. Я покажу лишь механизм который использую сам для настройки &ldquo;бесшовного&rdquo; ETL.</p>
+<p><img src="../mv_click.jpg" alt="as"></p>
+<p>У кликхауса есть инструмент, который тригерится на вставку данных и позволяет обработать небольшой кусок, это очень полезно и удобно. Для этого воспользуемся таблицей с движком Null, такая таблица позволяет реагировать на вставку данных и не хранить их.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">create</span> <span style="color:#66d9ef">table</span> <span style="color:#66d9ef">default</span>.<span style="color:#66d9ef">TABLE</span>
+(
+  insert_time DateTime, 
+  headers String, 
+  queue String, 
+  params_json String         
+) engine <span style="color:#f92672">=</span> <span style="color:#66d9ef">Null</span>;
+</code></pre></div><p>Теперь на такую таблицу можно навесть MV</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">CREATE</span> MATERIALIZED <span style="color:#66d9ef">VIEW</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">TABLE</span><span style="color:#f92672">&gt;</span>
+  ENGINE <span style="color:#f92672">=</span> MergeTree() 
+  PARTITION <span style="color:#66d9ef">BY</span> toYYYYMM(insert_time) 
+  <span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> insert_time 
+  SETTINGS index_granularity <span style="color:#f92672">=</span> <span style="color:#ae81ff">8192</span> 
+<span style="color:#66d9ef">AS</span>
+<span style="color:#66d9ef">SELECT</span> 
+  visitParamsString(param, <span style="color:#66d9ef">key</span>) <span style="color:#66d9ef">as</span> value
+  ...
+<span style="color:#66d9ef">FROM</span> <span style="color:#66d9ef">default</span>.<span style="color:#66d9ef">TABLE</span>
+</code></pre></div><p>Запрос пишется в соответствии с теми данными которые вы отправляете, и предназначен для разбора большого JSON на одинарные колонки, старайтесь разбирать ваши данные именно так.</p>
+<p>В целом это все, но есть небольшое послесловие.</p>
+<h3 id="проблемы-и-минусы-подхода">Проблемы и минусы подхода</h3>
+<ol>
+<li>GTM плохо работает с мозилой, есть шанс упустить много данных</li>
+<li>Будьте осторожны! GTM == ПРОД, не заставляйте разрабов вас ругать</li>
+<li>HTTP медленней чем нативный протокол AMQP</li>
+<li>Можно накосячить и заставить пользователей страдать</li>
+</ol>
+<h3 id="плюсы-подхода">Плюсы подхода</h3>
+<ol>
+<li>Простая и быстрая настройка событий</li>
+<li>Не нужны разработчики</li>
+</ol>
+<h3 id="что-не-освещалось">Что не освещалось</h3>
+<p>Я совсем не осветил проблему создания очередей, это можно почерпнуть из ссылок ниже. И куда важнее безопасности всей затеи, вам нужно понимать что как только вы начинаете отправлять данные с клиента вы по сути даете возможность любому человеку отправить что угодно в ваш кролик, тем самым можно столкнуться например с DDos атакой. Будьте осторожны. Не тяните сервер для обмена сообщениями в ваш прод, размещайте его в облаке.</p>
+<h3 id="полезные-ссылки">Полезные ссылки</h3>
+<ul>
+<li><a href="https://ru.wikipedia.org/wiki/AMQP#%D0%A2%D1%80%D0%B0%D0%BD%D1%81%D0%BF%D0%BE%D1%80%D1%82%D0%BD%D0%B0%D1%8F_%D0%B0%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0_AMQP">AMQP протокол</a></li>
+<li><a href="https://youtu.be/1LVJ_WcLgF8?t=7505">Про Materialized View</a></li>
+<li><a href="https://www.youtube.com/watch?v=4cWg5FVZV6Y&amp;list=WL&amp;index=3">Про кролика для маленьких</a></li>
+<li><a href="https://www.youtube.com/watch?v=jMZviSKf3QU&amp;t=2363s">Про кролика для тех кто постарше</a></li>
+<li><a href="https://www.simoahava.com/analytics/snowplow-full-setup-with-google-analytics-tracking/">Еще один пример решения задачи</a></li>
+</ul>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+    </article>
+    
+      <div class="Divider"></div>
+    
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/tasks_from_interviews/" rel="bookmark">SQL: задачи с собеседований на Постгресе</a>
+  </h2>
+  
+    <time datetime="2020-10-12T22:18:19&#43;03:00">12 October, 2020</time>
+  
+</header>
+      
+        <h3 id="задача-1-эмуляция-rank">Задача 1. Эмуляция rank()</h3>
+<p>Суть задачи, для каждого значения обозначить его номер в рейтинге по заданному полю, тут лучше показать пример. Колонка <em>rank</em>, выдает необходимый результат. Ну и собственно запрос который решает нашу задачу</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">user</span>, 
+       value, 
+       rank() OVER (<span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> value <span style="color:#66d9ef">DESC</span>)
+<span style="color:#66d9ef">FROM</span> <span style="color:#66d9ef">table</span>
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">user</th>
+<th align="left">value</th>
+<th align="left">rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">3</td>
+<td align="left">50</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">10</td>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">10</td>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">6</td>
+<td align="left">4</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">5</td>
+<td align="left">5</td>
+</tr>
+</tbody>
+</table>
+<p>Попробуем решить её без оконных функций, первый раз когда мне ее задали я сильно затупил, и вроде начал двигаться в нужном направлении, но усталость после примерно часа собеседования меня победила :)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> t1.<span style="color:#66d9ef">user</span>, <span style="color:#66d9ef">count</span>(<span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">as</span> rank
+<span style="color:#66d9ef">FROM</span> <span style="color:#66d9ef">public</span>.test t1
+    <span style="color:#66d9ef">cross</span> <span style="color:#66d9ef">join</span> <span style="color:#66d9ef">public</span>.test t2
+<span style="color:#66d9ef">where</span> t1.value <span style="color:#f92672">&lt;=</span> t2.value
+<span style="color:#66d9ef">group</span> <span style="color:#66d9ef">by</span> t1.<span style="color:#66d9ef">user</span>
+</code></pre></div><p>Вот решение, оно очень просто на самом деле, идея в том что при джойне и фильтрации мы получим количество строк равное месту в рейтиге для данного значения. В целом решение не трудное, как и задача, необходимо просто немного подумать. Но есть тонкий момент, если у вас есть повторяющиеся значения то вы получить пропущенные строки в зависимости от того сколько повторов у вас есть, в нашем случае это 2 повтора, с другой стороны, логично подумать что они делят <em>n</em> и <em>n-1</em> место.</p>
+<table>
+<thead>
+<tr>
+<th align="left">user</th>
+<th align="left">rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">3</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">4</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="задача-2-подсчет-сессий-пользователя">Задача 2. Подсчет сессий пользователя.</h3>
+<p>Не знаю почему на каждом 2 собеседовании любят давать эту задачу, в разных вариациях, тем не менее суть одна. Решений эта задача имеет также не мало, но мы попробуем решить ее через оконные функции, как мой самый любимый способ решения. Возьмем один из самых простых вариантов задачи, для каждого юзера мы имеем лог его данных который снимаем каждые 5 минут, если разница между двумя промежутками больше, то это новая сессия, нужно разметить каждую сессию.</p>
+<table>
+<thead>
+<tr>
+<th align="left">user</th>
+<th align="left">login</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:05:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:10:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:15:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:20:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:25:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:05:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:40:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:30:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:20:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:10:00.000000</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:05:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:10:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:15:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:20:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:25:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:05:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:40:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:30:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:20:00.000000</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:10:00.000000</td>
+</tr>
+</tbody>
+</table>
+<p>Впервую очередь отсортируем данные и применим функцию lag для смещения данных на 1 значение вниз</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> t1.<span style="color:#66d9ef">user</span>, 
+       login, 
+       lag(login, <span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">NULL</span>) OVER 
+            (PARTITION <span style="color:#66d9ef">BY</span> 
+                t1.<span style="color:#66d9ef">user</span> <span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> t1.<span style="color:#66d9ef">user</span>, 
+                login) next_log
+<span style="color:#66d9ef">FROM</span> <span style="color:#66d9ef">table</span> t1
+</code></pre></div><p>Теперь вычтем смещение и посмотрим разницу между 2 повторяющимися значениями, после чего применим функцию камулятивной суммы, это как раз таки и даст необходимый нам результат.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> <span style="color:#f92672">*</span>, 
+       <span style="color:#66d9ef">sum</span>(ind) over 
+       (PARTITION <span style="color:#66d9ef">BY</span> t3.<span style="color:#66d9ef">user</span> 
+       <span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> t3.<span style="color:#66d9ef">user</span> <span style="color:#66d9ef">rows</span> 
+       <span style="color:#66d9ef">between</span> unbounded preceding <span style="color:#66d9ef">and</span> <span style="color:#66d9ef">current</span> <span style="color:#66d9ef">row</span>) <span style="color:#66d9ef">as</span> sessions
+<span style="color:#66d9ef">from</span> (
+       <span style="color:#66d9ef">select</span> t2.<span style="color:#66d9ef">user</span>,
+              login,
+              <span style="color:#66d9ef">case</span>
+              <span style="color:#66d9ef">when</span> (login<span style="color:#f92672">-</span>prev_log) <span style="color:#f92672">&gt;</span> <span style="color:#e6db74">&#39;5 mins&#39;</span> <span style="color:#66d9ef">then</span> <span style="color:#ae81ff">1</span>
+              <span style="color:#66d9ef">else</span> <span style="color:#ae81ff">0</span>
+              <span style="color:#66d9ef">end</span> ind
+       <span style="color:#66d9ef">from</span> (
+              <span style="color:#66d9ef">SELECT</span> t1.<span style="color:#66d9ef">user</span>,
+                     login,
+                     lag(login, <span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">NULL</span>) 
+                     OVER (PARTITION <span style="color:#66d9ef">BY</span> t1.<span style="color:#66d9ef">user</span> 
+                     <span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> t1.<span style="color:#66d9ef">user</span>, login) prev_log
+              <span style="color:#66d9ef">FROM</span> <span style="color:#66d9ef">table</span> t1) t2
+     ) t3
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">user</th>
+<th align="left">login</th>
+<th align="left">ind</th>
+<th align="left">sessions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:05:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:10:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:15:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 10:20:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:05:00.000000</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:10:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:15:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:20:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:25:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">2020-10-12 20:30:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:05:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:10:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:15:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 10:20:00.000000</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:05:00.000000</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:10:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:15:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:20:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:25:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">2020-10-12 20:30:00.000000</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+</tbody>
+</table>
+<p>Собственно все, пара простых но интереных задач для практики SQL.</p>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+    </article>
+    
+      <div class="Divider"></div>
+    
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/pandas_for_everyone/" rel="bookmark">Python: Оптимизация работы с Pandas</a>
+  </h2>
+  
+    <time datetime="2020-06-21T20:54:03&#43;03:00">21 June, 2020</time>
+  
+</header>
+      
+        <h3 id="считывание-больших-данных">Считывание больших данных</h3>
+<p>Очень полезная возможность Pandas - итерирование по датафрейму, если вдруг он не влазит в память (такое часто бывает в реальной работе).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data_iter <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;babynames.csv&#39;</span>, chunksize<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">data_prep</span>(df, func):
+    <span style="color:#e6db74">&#34;&#34;&#34; Отфильтруем данные и сложим в другой файлик
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">for</span> chunk <span style="color:#f92672">in</span> df:
+        tmp <span style="color:#f92672">=</span> func(chunk)
+        tmp<span style="color:#f92672">.</span>to_csv(<span style="color:#e6db74">&#39;dataset.csv&#39;</span>)
+        
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">func_filter</span>(data):
+    <span style="color:#66d9ef">return</span> data<span style="color:#f92672">.</span>head(<span style="color:#ae81ff">5</span>)
+
+data_prep(data_iter, func_filter)
+</code></pre></div><h3 id="понижение-размера-дата-фрейма">Понижение размера дата фрейма</h3>
+<p>При считываении таблицы в pandas есть возможность повлиять на размер занимаемых данных путем снижения количества выделяемой памяти, но с этим нужно быть осторожным, если у вас очень большие числа, то снижение 64 бит до 32 может попросту вызвать переполнение и неверные данные.
+Тут лучше небольшой бенчмарк.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Загрузка данных из файла</span>
+data <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;babynames.csv&#39;</span>)
+data<span style="color:#f92672">.</span>info()
+
+<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">pandas</span><span style="color:#f92672">.</span>core<span style="color:#f92672">.</span>frame<span style="color:#f92672">.</span>DataFrame<span style="color:#e6db74">&#39;&gt;</span>
+RangeIndex: <span style="color:#ae81ff">1690784</span> entries, <span style="color:#ae81ff">0</span> to <span style="color:#ae81ff">1690783</span>
+Data columns (total <span style="color:#ae81ff">4</span> columns):
+ <span style="color:#75715e">#   Column  Non-Null Count    Dtype </span>
+<span style="color:#f92672">---</span>  <span style="color:#f92672">------</span>  <span style="color:#f92672">--------------</span>    <span style="color:#f92672">-----</span> 
+ <span style="color:#ae81ff">0</span>   Name    <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  object
+ <span style="color:#ae81ff">1</span>   Gender  <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  object
+ <span style="color:#ae81ff">2</span>   Count   <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  int64 
+ <span style="color:#ae81ff">3</span>   Year    <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  int64 
+dtypes: int64(<span style="color:#ae81ff">2</span>), object(<span style="color:#ae81ff">2</span>)
+memory usage: <span style="color:#ae81ff">51.6</span><span style="color:#f92672">+</span> MB <span style="color:#f92672">&lt;&lt;&lt;&lt;&lt;&lt;</span> <span style="color:#960050;background-color:#1e0010">ТУТ</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Загрузка данных из файла с оптимизацией поля Gender</span>
+data <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;babynames.csv&#39;</span>, dtype<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;Name&#39;</span>: object, <span style="color:#e6db74">&#39;Gender&#39;</span>: <span style="color:#e6db74">&#39;category&#39;</span>,<span style="color:#e6db74">&#39;Count&#39;</span>: <span style="color:#e6db74">&#39;int32&#39;</span>,<span style="color:#e6db74">&#39;Year&#39;</span>: <span style="color:#e6db74">&#39;int16&#39;</span>})
+data<span style="color:#f92672">.</span>info()
+
+<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">pandas</span><span style="color:#f92672">.</span>core<span style="color:#f92672">.</span>frame<span style="color:#f92672">.</span>DataFrame<span style="color:#e6db74">&#39;&gt;</span>
+RangeIndex: <span style="color:#ae81ff">1690784</span> entries, <span style="color:#ae81ff">0</span> to <span style="color:#ae81ff">1690783</span>
+Data columns (total <span style="color:#ae81ff">4</span> columns):
+ <span style="color:#75715e">#   Column  Non-Null Count    Dtype   </span>
+<span style="color:#f92672">---</span>  <span style="color:#f92672">------</span>  <span style="color:#f92672">--------------</span>    <span style="color:#f92672">-----</span>   
+ <span style="color:#ae81ff">0</span>   Name    <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  object  
+ <span style="color:#ae81ff">1</span>   Gender  <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  category
+ <span style="color:#ae81ff">2</span>   Count   <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  int32   
+ <span style="color:#ae81ff">3</span>   Year    <span style="color:#ae81ff">1690784</span> non<span style="color:#f92672">-</span>null  int16   
+dtypes: category(<span style="color:#ae81ff">1</span>), int16(<span style="color:#ae81ff">1</span>), int32(<span style="color:#ae81ff">1</span>), object(<span style="color:#ae81ff">1</span>)
+memory usage: <span style="color:#ae81ff">24.2</span><span style="color:#f92672">+</span> MB <span style="color:#f92672">&lt;&lt;&lt;&lt;&lt;&lt;</span> <span style="color:#960050;background-color:#1e0010">ТУТ</span>
+</code></pre></div><p>Итак что мы сделали? По умолчанию Pandas для каждого значения выделяет 64 бита для Int, мы понизили его до 32 и 16 соответственно. И также поменяли тип <em>Gender</em> на <em>category</em>, данный тип очень полезен если ваш столбец имеет низкую гранулярность, тогда можно существенно снизить объем, дело в том что каждое значение будет закодировано числом, а текст будет лежать как словарь отдельно.</p>
+<p>Итак нам удалось снизить размер в 2 раза, хороший результат!</p>
+<h3 id="парсинг-даты-при-чтении">Парсинг даты при чтении</h3>
+<p>Корректный разбор даты и тип столбца datetime который снизит размер вашего DF (в моей практике был реальный случай когда в финансовых данных из 1C, господи прости, дата была в очень странном виде, и распарсилась таким образом что месяц стал днем и все перепуталось). Вообщем указывайте явно, это может быть дольше с точки зрения чтения дата фрейма, но зато очевидно и поможет сократить место на диске.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%</span>time
+<span style="color:#75715e"># Пусть dateutils сам разберется как парсить дату</span>
+data <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;babynames_time_test.csv&#39;</span>, parse_dates<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;Year&#39;</span>])
+
+CPU times: user <span style="color:#ae81ff">3</span> <span style="color:#960050;background-color:#1e0010">µ</span>s, sys: <span style="color:#ae81ff">0</span> ns, total: <span style="color:#ae81ff">3</span> <span style="color:#960050;background-color:#1e0010">µ</span>s
+Wall time: <span style="color:#ae81ff">7.15</span> <span style="color:#960050;background-color:#1e0010">µ</span>s
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%</span>time
+<span style="color:#75715e"># Говорим ему как разобрать дату</span>
+date_parse_func <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> x: pd<span style="color:#f92672">.</span>datetime<span style="color:#f92672">.</span>strptime(x, <span style="color:#e6db74">&#34;%Y-%m-</span><span style="color:#e6db74">%d</span><span style="color:#e6db74"> %H:%M:%S&#34;</span>)
+data <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;babynames_time_test.csv&#39;</span>, parse_dates<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;Year&#39;</span>], date_parser<span style="color:#f92672">=</span>date_parse_func)
+
+CPU times: user <span style="color:#ae81ff">3</span> <span style="color:#960050;background-color:#1e0010">µ</span>s, sys: <span style="color:#ae81ff">0</span> ns, total: <span style="color:#ae81ff">3</span> <span style="color:#960050;background-color:#1e0010">µ</span>s
+Wall time: <span style="color:#ae81ff">6.68</span> <span style="color:#960050;background-color:#1e0010">µ</span>s
+</code></pre></div><h3 id="индексирование-и-join">Индексирование и join</h3>
+<p>Индексирование полей помогает при джойне, причем весьма сильно. Немного бенчмарков.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%%</span>timeit
+data<span style="color:#f92672">.</span>merge(data, on<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Name&#39;</span>)
+
+<span style="color:#ae81ff">18</span> s <span style="color:#960050;background-color:#1e0010">±</span> <span style="color:#ae81ff">148</span> ms per loop (mean <span style="color:#960050;background-color:#1e0010">±</span> std<span style="color:#f92672">.</span> dev<span style="color:#f92672">.</span> of <span style="color:#ae81ff">7</span> runs, <span style="color:#ae81ff">1</span> loop each)
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%%</span>timeit
+data<span style="color:#f92672">.</span>set_index(<span style="color:#e6db74">&#39;Name&#39;</span>)
+data<span style="color:#f92672">.</span>merge(data, left_index<span style="color:#f92672">=</span>True, right_index<span style="color:#f92672">=</span>True)
+
+<span style="color:#ae81ff">184</span> ms <span style="color:#960050;background-color:#1e0010">±</span> <span style="color:#ae81ff">3.29</span> ms per loop (mean <span style="color:#960050;background-color:#1e0010">±</span> std<span style="color:#f92672">.</span> dev<span style="color:#f92672">.</span> of <span style="color:#ae81ff">7</span> runs, <span style="color:#ae81ff">10</span> loops each)
+</code></pre></div><p>Также замечу что индекс поможет вам при использовании функций <em>at</em>, поиск по индексу, это аналог <em>loc</em>.</p>
+<h3 id="векторные-операции">Векторные операции</h3>
+<p>Старайтесь избегать действий с map/apply/applymap, эти функции так или иначе используют цикл в своих кишках, на уровне ниже, вместо этого стоит воспользоваться встроенным механизмом векторных операций, ну и очевидно что нужно по максимуму отказыаться от работы с циклами или itertools, если не хотите выполнять свою работу очень медленно :). Немного бенчмарков.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%%</span>timeit
+data[<span style="color:#e6db74">&#39;Count&#39;</span>]<span style="color:#f92672">.</span>map(<span style="color:#66d9ef">lambda</span> x: x <span style="color:#f92672">-</span> x<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>)
+
+<span style="color:#ae81ff">497</span> ms <span style="color:#960050;background-color:#1e0010">±</span> <span style="color:#ae81ff">19.4</span> ms per loop (mean <span style="color:#960050;background-color:#1e0010">±</span> std<span style="color:#f92672">.</span> dev<span style="color:#f92672">.</span> of <span style="color:#ae81ff">7</span> runs, <span style="color:#ae81ff">1</span> loop each)
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">%%</span>timeit
+data[<span style="color:#e6db74">&#39;Count&#39;</span>] <span style="color:#f92672">-</span> data[<span style="color:#e6db74">&#39;Count&#39;</span>]<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>
+
+<span style="color:#ae81ff">12.4</span> ms <span style="color:#960050;background-color:#1e0010">±</span> <span style="color:#ae81ff">244</span> <span style="color:#960050;background-color:#1e0010">µ</span>s per loop (mean <span style="color:#960050;background-color:#1e0010">±</span> std<span style="color:#f92672">.</span> dev<span style="color:#f92672">.</span> of <span style="color:#ae81ff">7</span> runs, <span style="color:#ae81ff">100</span> loops each)
+</code></pre></div><hr>
+<p>Ссылка на юпитер ноутбук который я использовал:</p>
+<ul>
+<li><a href="https://github.com/dm-novikov/notebooks/blob/master/pandas_optimisation.ipynb">https://github.com/dm-novikov/notebooks/blob/master/pandas_optimisation.ipynb</a></li>
+</ul>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+  <footer>
+    
+      
+    
+      
+        <ul class="Tags">
+          
+            <li class="Tags-item u-background">
+              <a class="Tags-link u-clickable" href="/blog/tags/pandas/" rel="tag">pandas</a>
+            </li>
+          
+        </ul>
+      
+    
+  </footer>
+
+    </article>
+    
+      <div class="Divider"></div>
+    
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/logs_api_clickhouse/" rel="bookmark">SQL: меняем массивы на JSON в ClikHouse</a>
+  </h2>
+  
+    <time datetime="2020-06-12T16:41:22&#43;03:00">12 June, 2020</time>
+  
+</header>
+      
+        <h2 id="как-обмануть-logs-api">Как обмануть Logs API</h2>
+<p>Совсем недавно интерфейс Яндекс Logs API сделал странный ход, вместо отправляемого json объекта, на выходе мы стали получать десять колонок где колонка содержит уровень вложенности в ввиде <em>array</em>.</p>
+<p>Вот что по этому поводу сказала поддержка</p>
+<blockquote>
+<p>На самом деле параметры будут парситься от самого &ldquo;нижнего&rdquo; уровня до самого &ldquo;верхнего&rdquo;. По этой причине, значения на  уровнях Выше могут дублироваться по отношению к более &ldquo;нижним&rdquo; уровням.</p>
+</blockquote>
+<blockquote>
+<p>Можно взять следующий пример:</p>
+</blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#f92672">&#34;Key1_1&#34;</span>: {
+        <span style="color:#f92672">&#34;Key2_1&#34;</span>: [
+            <span style="color:#e6db74">&#34;Key3_11&#34;</span>,
+            <span style="color:#e6db74">&#34;Key3_12&#34;</span>
+            ],
+        <span style="color:#f92672">&#34;Key2_2&#34;</span>: [
+            <span style="color:#e6db74">&#34;Key3_21&#34;</span>,
+            <span style="color:#e6db74">&#34;Key3_22&#34;</span>
+                ]
+            },
+    <span style="color:#f92672">&#34;Key1_2&#34;</span>: 
+        <span style="color:#e6db74">&#34;Key2_3&#34;</span><span style="color:#960050;background-color:#1e0010">​​​</span>
+}
+</code></pre></div><blockquote>
+<p>В указанном примере можно ожидать следующие массивы в ответе Logs API:</p>
+</blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#ae81ff">1</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey1&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_1&#34;</span>,<span style="color:#e6db74">&#34;Key1_2&#34;</span>]
+<span style="color:#ae81ff">2</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey2&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_1&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_2&#34;</span>,<span style="color:#e6db74">&#34;Key2_3&#34;</span>]
+<span style="color:#ae81ff">3</span> <span style="color:#e6db74">&#34;ym:pv:parsedParamsKey3&#34;</span> <span style="color:#960050;background-color:#1e0010">-</span> [<span style="color:#e6db74">&#34;Key3_11&#34;</span>,<span style="color:#e6db74">&#34;Key3_12&#34;</span>,<span style="color:#e6db74">&#34;Key3_21&#34;</span>,<span style="color:#e6db74">&#34;Key3_22&#34;</span>,<span style="color:#e6db74">&#34;&#34;</span>]
+
+</code></pre></div><p>Давайте просто вернем все на свои места, с небольшим допущением, уровни вложенности схлопнутся в один, и будут иметь один длинный ключик (при желании можно конечно вернуть и оригинальный json объект)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span>
+    <span style="color:#f92672">*</span>,
+    <span style="color:#75715e">/*Этот кусочек разбирает строку и преобразует в массивы, если у вас уже массивы можно удалить эту часть*/</span>
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey1, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params1,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey2, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params2,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey3, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params3,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey4, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params4,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey5, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params5,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey6, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params6,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey7, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params7,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey8, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params8,
+    splitByChar(<span style="color:#e6db74">&#39;,&#39;</span>, replaceAll(replaceOne(replaceOne(ParsedParamsKey9, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;&#39;)) as params9,
+</span><span style="color:#e6db74">    splitByChar(&#39;</span>,<span style="color:#e6db74">&#39;, replaceAll(replaceOne(replaceOne(ParsedParamsKey10, &#39;</span>[<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span>]<span style="color:#e6db74">&#39;, &#39;&#39;), &#39;</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">&#39;&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)) <span style="color:#66d9ef">as</span> params10,
+    <span style="color:#75715e">/*Крутим массивы чтобы сделать json*/</span>
+    arrayMap(x <span style="color:#f92672">-&gt;</span> x <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, range(<span style="color:#66d9ef">length</span>(params1))) <span style="color:#66d9ef">as</span> len,
+    arrayMap(x <span style="color:#f92672">-&gt;</span>  arrayFilter(y <span style="color:#f92672">-&gt;</span> y <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;&#39;</span>, x),arrayMap(x <span style="color:#f92672">-&gt;</span> array(arrayElement(params1, x),
+                        arrayElement(params2, x),
+                        arrayElement(params3, x),
+                        arrayElement(params4, x),
+                        arrayElement(params5, x),
+                        arrayElement(params6, x),
+                        arrayElement(params7, x),
+                        arrayElement(params8, x),
+                        arrayElement(params9, x),
+                        arrayElement(params10, x)), len)) <span style="color:#66d9ef">as</span> array_array,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> x[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], array_array) <span style="color:#66d9ef">as</span> value,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> arrayStringConcat(x, <span style="color:#e6db74">&#39;_&#39;</span>), arrayMap(x <span style="color:#f92672">-&gt;</span> arrayPopBack(x), array_array)) <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">key</span>,
+        arrayMap(x <span style="color:#f92672">-&gt;</span> arrayStringConcat(x, <span style="color:#e6db74">&#39;&#34;:&#34;&#39;</span>), arrayMap(x <span style="color:#f92672">-&gt;</span> array(arrayElement(<span style="color:#66d9ef">key</span>, x), arrayElement(value, x)), len)) <span style="color:#66d9ef">as</span> tmp,
+        replaceAll(replaceOne(replaceOne(toString(tmp), <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;{&#39;</span>), <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;}&#39;</span>), <span style="color:#e6db74">&#39;\&#39;&#39;, &#39;</span><span style="color:#e6db74">&#34;&#39;) as tmp_json,
+</span><span style="color:#e6db74">        if(tmp_json = &#39;{&#34;&#34;:&#34;&#34;}&#39;, &#39;&#39;, tmp_json) as params_json
+</span><span style="color:#e6db74">FROM #твоя таблица
+</span></code></pre></div><p>При большом желании можно теперь сделать MV чтобы не бегать каждый раз по всей таблице и не грузить сервер. Если вы пользуетесь последней версией ClickHouse то можете воспользоваться функцией <em>arrayZip</em> это сильно уменьшит запрос.</p>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+  <footer>
+    
+      
+    
+      
+        <ul class="Tags">
+          
+            <li class="Tags-item u-background">
+              <a class="Tags-link u-clickable" href="/blog/tags/clickhouse/" rel="tag">ClickHouse</a>
+            </li>
+          
+            <li class="Tags-item u-background">
+              <a class="Tags-link u-clickable" href="/blog/tags/sql/" rel="tag">SQL</a>
+            </li>
+          
+        </ul>
+      
+    
+  </footer>
+
+    </article>
+    
+      <div class="Divider"></div>
+    
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/array_join_clickhouse/" rel="bookmark">SQL: arrayJoin и range в ClickHouse</a>
+  </h2>
+  
+    <time datetime="2020-05-30T15:00:13&#43;03:00">30 May, 2020</time>
+  
+</header>
+      
+        <h3 id="что-за-range">Что за range(?)</h3>
+<p>В ClickHouse нет оконных функций, однако есть обходной путь, это массивы, они позволяют обрабатывать кусок, лежащий в одной строке на пример как вы это делаете в Python с list. В статья я хочу рассказать о паре полезных применений функции range() которая умеет генерировать последовательность целых чисел в массиве. А функция arrayJoin умеет разворачивать данные из массива в столбец, вокруг этой истории и будет эта статья  <em>arrayJoin(range())</em>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> range(<span style="color:#ae81ff">10</span>)
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">Вывод</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">[0,1,2,3,4,5,6,7,8,9]</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> arrayJoin(range(<span style="color:#ae81ff">10</span>)) <span style="color:#66d9ef">as</span> arr
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">Вывод</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">4</td>
+</tr>
+<tr>
+<td align="left">5</td>
+</tr>
+<tr>
+<td align="left">6</td>
+</tr>
+<tr>
+<td align="left">7</td>
+</tr>
+<tr>
+<td align="left">8</td>
+</tr>
+<tr>
+<td align="left">9</td>
+</tr>
+</tbody>
+</table>
+<h2 id="применение-1">Применение 1</h2>
+<h3 id="генерация-новых-значений-для-сломанной-воронки">Генерация новых значений для сломанной воронки</h3>
+<p>Итак обозначим проблему, у вас есть игра(или другой сервис) для которого вы хотите построить воронку, вот самую обычную, одна проблема, часть ваших данных прое..¯_(ツ)_/¯ и построить воронку простым select-ом не получится. Такое часто бывает когда у вас event аналитика. Окэй! Попробуем подумать что мы можем сделать.</p>
+<p>Скрипт генерации данных в CH</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#75715e">/*Тут просто небольшой запрос чтобы сгенерировать нужные нам данные,
+</span><span style="color:#75715e">тут кстати мы и применяем arrayJoin */</span>
+
+<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step, <span style="color:#75715e">/* Шаг */</span>
+ tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID <span style="color:#75715e">/* Идентификатор юзера */</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">step</th>
+<th align="left">uid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">step 1</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">step 3</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">step 2</td>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">step 1</td>
+<td align="left">2</td>
+</tr>
+</tbody>
+</table>
+<p>Одно очевидное наблюдение, у нас всегда есть последнее событие юзера, и так как мы знаем что воронка не возрастает, то можно ориентироваться на это событие как на конечное, и все что нам останется, это сгенерировать недостающие шаги воронки, вот тут то нам и поможет range + arrayJoin.</p>
+<p><strong>Итак по шагам:</strong></p>
+<p>Шаг 1: Создадим необходимую последовательность из шагов которые мы хотим увидеть</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name,
+       step
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+          tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> name,
+          tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step)
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">events</th>
+<th align="left">events_index</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">step 1</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">step 2</td>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">step 3</td>
+<td align="left">3</td>
+</tr>
+</tbody>
+</table>
+<p>Шаг 2: Объединими наши данные по событиям с таблицей выше, где размечены шаги по номерам</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+          tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> step_id,
+          step
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+             tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+             tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step_id)) <span style="color:#66d9ef">USING</span> step
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">step</th>
+<th align="left">uid</th>
+<th align="left">step_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">step 1</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">step 3</td>
+<td align="left">1</td>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">step 2</td>
+<td align="left">2</td>
+<td align="left">2</td>
+</tr>
+<tr>
+<td align="left">step 3</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+</tbody>
+</table>
+<p>Хорошо, теперь каждый евент юзера помечен номером в воронке.</p>
+<p>Шаг 3: Немного магии</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> UID,
+       <span style="color:#66d9ef">transform</span>(<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> arrayJoin(range(toUInt8(<span style="color:#66d9ef">max</span>(step_id)))), [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>], [<span style="color:#e6db74">&#39;step 1&#39;</span>,
+         <span style="color:#e6db74">&#39;step 2&#39;</span>,
+         <span style="color:#e6db74">&#39;step 3&#39;</span>], <span style="color:#e6db74">&#39;none&#39;</span>) <span style="color:#66d9ef">AS</span> q
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+          tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> UID
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>),(<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">2</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> step_id,
+          step
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin(array((<span style="color:#e6db74">&#39;step 1&#39;</span>, <span style="color:#ae81ff">1</span>), (<span style="color:#e6db74">&#39;step 2&#39;</span>, <span style="color:#ae81ff">2</span>), (<span style="color:#e6db74">&#39;step 3&#39;</span>, <span style="color:#ae81ff">3</span>))) <span style="color:#66d9ef">AS</span> tuple,
+             tupleElement(tuple, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> step,
+             tupleElement(tuple, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> step_id)) <span style="color:#66d9ef">USING</span> step
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> UID
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">uid</th>
+<th align="left">q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">1</td>
+<td align="left">step 1</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">step 2</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">step 3</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">step 1</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">step 2</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">step 3</td>
+</tr>
+</tbody>
+</table>
+<p><em>max(step_id) &gt; toUInt8() -&gt; range() -&gt; arrayJoin() -&gt; 1+ -&gt; transform()</em></p>
+<p>Для начала мы взяли максимальный достигнутый шаг пользователя, преобразовали тип значения (требование range), затем сформировали массив,  развернули его, прибавили 1 чтобы начиналось с 1 (хотя это опционально) и применили <a href="https://clickhouse.tech/docs/ru/sql-reference/functions/other-functions/#transformx-array-from-array-to-default">transform</a> (это что то вроде case для массивов)</p>
+<p>Итак мы получили то что хотели, из таблицы где часть данных пропала, мы дозаполнили ее необходимыми значениями.</p>
+<p><em>P.S</em>
+Если вдруг вы спрашиваете зачем это нужно? Резонный вопрос, можно ведь было просто сгруппировать данные по событиям и посчитать камуляту снизу вверх, и получить тот же результат, проблема в том что бизнес не стоит на месте, и возможно завтра вам потребуется добавить новый признак для пользователя (например его пол), и тогда придется не дописать небольшой участок запроса (Join к пользователям), а переписать его полностью. Все что описано выше, характерно только для ClickHouse. В других БД можно реализовать эту задачу чуть проще.</p>
+<h2 id="применение-2">Применение 2</h2>
+<h3 id="прогнозирование-на-sql-через-линейную-регрессию">Прогнозирование на SQL через линейную регрессию</h3>
+<p>Этот запрос я написал когда делал прогнозирование для free-to-play игры, задача была простой, реализовать прогноз который можно было  поддерживать BI аналитиками. Суть метода весьма проста, в видеоиграх часто использую такой метод прогнозирвоания с накоплением ARPU/ARPPU, его приближают некоторым полиномом (или логарифмом) и выводят то что называют LTV.</p>
+<p><img src="https://hsto.org/files/c52/ebb/978/c52ebb9780ca4d9ea95b7629a3d782dd.png" alt="Вот что то в этом роде"></p>
+<p><em>Вот что то в этом роде</em></p>
+<p>Не будем обсуждать этот метод, его точность и вот это все. А просто возьмем и сделаем наш супер прогноз.</p>
+<p>Генерация датасета</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+       toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+       tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">cohort</th>
+<th align="left">day</th>
+<th align="left">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">1</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">2</td>
+<td align="left">100</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">3</td>
+<td align="left">200</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">4</td>
+<td align="left">300</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">2</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">3</td>
+<td align="left">100</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">5</td>
+<td align="left">200</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">6</td>
+<td align="left">300</td>
+</tr>
+</tbody>
+</table>
+<p>Важная особенность, я не беру совсем сырые данные с которыми вы скорее всего будете работать, в моем случае у каждой когорты есть уже начитанный индекс первого входа. В нашем датасете у нас есть, когорта (заранее известная), день жизни когорты, и ее заработок в деньгах. Все что нам остается, это дозаполнить пропуски, в алгоритме их нельзя оставлять пустыми и сделать прогноз.</p>
+<p><strong>Итак по шагам:</strong></p>
+<p>Шаг 1: Сгенерируем все дни жизни когорты</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> cohort,
+          day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+             arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+      <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+<span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+  (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+          toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+          tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>),(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>),
+                       (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>),(<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                <span style="color:#66d9ef">DAY</span>)
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">cohort</th>
+<th align="left">day</th>
+<th align="left">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">1</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">2</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">3</td>
+<td align="left">100</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">4</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">5</td>
+<td align="left">200</td>
+</tr>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">6</td>
+<td align="left">300</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">1</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">2</td>
+<td align="left">100</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">3</td>
+<td align="left">200</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">4</td>
+<td align="left">300</td>
+</tr>
+</tbody>
+</table>
+<p>Фух, сложновато, но на самом деле мы делале что то похожее на предыдущий пример, только чуть проще. Я опущу разъяснения, вы можете самостоятельно с этим разобраться.</p>
+<p>Шаг 2: Ну что же, теперь давайте снова все свернем в массивы&hellip;what?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+       arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                   tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                   tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+         <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+   <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+     (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+             toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+             tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                            <span style="color:#66d9ef">DAY</span>))
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort
+</code></pre></div><table>
+<thead>
+<tr>
+<th align="left">cohort</th>
+<th align="left">X</th>
+<th align="left">y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">cohort 2</td>
+<td align="left">[1,2,3,4,5,6,7,8]</td>
+<td align="left">[0,10,110,110,310,310,310,610]</td>
+</tr>
+<tr>
+<td align="left">cohort 1</td>
+<td align="left">[1,2,3,4]</td>
+<td align="left">[10,110,310,610]</td>
+</tr>
+</tbody>
+</table>
+<p>И так, тут все очень просто, просто упаковываем дни и значения в 2 массива, обозначаем их X, y.</p>
+<p>Шаг 3: Прогнозирование</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+       arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y,
+       arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), X) <span style="color:#66d9ef">AS</span> X_ln, <span style="color:#75715e">/* Преобразуем независимую переменную, это позволит сгладить прогноз */</span>
+ arrayReduce(<span style="color:#e6db74">&#39;simpleLinearRegression&#39;</span>, X_ln, y) <span style="color:#66d9ef">AS</span> coef, <span style="color:#75715e">/* Собственно расчет коэффициентов (используется аналитическое решение)*/</span>
+ <span style="color:#75715e">/* Все последующие преобразования нужны для прогноза выручки на N день */</span>
+ <span style="color:#66d9ef">length</span>(X_ln) <span style="color:#66d9ef">AS</span> count_days,
+ arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), range(<span style="color:#66d9ef">length</span>(X_ln) <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> days_predict,
+ tupleElement(coef, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> coef_a,
+ tupleElement(coef, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> coef_b,
+ arrayMap(x <span style="color:#f92672">-&gt;</span> x<span style="color:#f92672">*</span>coef_a <span style="color:#f92672">+</span> coef_b, days_predict) <span style="color:#66d9ef">AS</span> array_predict
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> cohort,
+             day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                   tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                   tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+         <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+   <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+     (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+             toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+             tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                            <span style="color:#66d9ef">DAY</span>))
+<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort
+</code></pre></div><p>Ну что же, прогноз есть, правда он лежит в массиве, необходимо его распаковать. Эти и займемся.</p>
+<p>Шаг 4: Подготовка данных для BI</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> cohort,
+       arrayJoin(range(count_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> index_days,
+       arrayElement(array_predict, index_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> predict,
+       arrayElement(y, index_days <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> revenue
+<span style="color:#66d9ef">FROM</span>
+  (<span style="color:#66d9ef">SELECT</span> cohort,
+          groupArray(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> X,
+          arrayCumSum(groupArray(value)) <span style="color:#66d9ef">AS</span> y,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), X) <span style="color:#66d9ef">AS</span> X_ln,
+          arrayReduce(<span style="color:#e6db74">&#39;simpleLinearRegression&#39;</span>, X_ln, y) <span style="color:#66d9ef">AS</span> coef,
+          <span style="color:#66d9ef">length</span>(X_ln) <span style="color:#66d9ef">AS</span> count_days,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> ln(x <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), range(<span style="color:#66d9ef">length</span>(X_ln) <span style="color:#f92672">+</span> <span style="color:#ae81ff">30</span>)) <span style="color:#66d9ef">AS</span> days_predict,
+          tupleElement(coef, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> coef_a,
+          tupleElement(coef, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> coef_b,
+          arrayMap(x <span style="color:#f92672">-&gt;</span> x <span style="color:#f92672">*</span> coef_a <span style="color:#f92672">+</span> coef_b, days_predict) <span style="color:#66d9ef">AS</span> array_predict
+   <span style="color:#66d9ef">FROM</span>
+     (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span>
+      <span style="color:#66d9ef">FROM</span>
+        (<span style="color:#66d9ef">SELECT</span> cohort,
+                day1 <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> cohort,
+                   <span style="color:#66d9ef">max</span>(<span style="color:#66d9ef">DAY</span>) <span style="color:#66d9ef">AS</span> last_login,
+                   arrayJoin(range(last_login)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> day1
+            <span style="color:#66d9ef">FROM</span>
+              (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                      tupleElement(array, <span style="color:#ae81ff">2</span>) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                      tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+               <span style="color:#66d9ef">FROM</span>
+                 (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array))
+            <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)) <span style="color:#66d9ef">ANY</span>
+      <span style="color:#66d9ef">LEFT</span> <span style="color:#66d9ef">JOIN</span>
+        (<span style="color:#66d9ef">SELECT</span> tupleElement(array, <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">AS</span> cohort,
+                toUInt16(tupleElement(array, <span style="color:#ae81ff">2</span>)) <span style="color:#66d9ef">AS</span> <span style="color:#66d9ef">DAY</span>,
+                tupleElement(array, <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">AS</span> value
+         <span style="color:#66d9ef">FROM</span>
+           (<span style="color:#66d9ef">SELECT</span> arrayJoin([(<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 1&#39;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">300</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">10</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">100</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">200</span>), (<span style="color:#e6db74">&#39;cohort 2&#39;</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">300</span>)]) <span style="color:#66d9ef">AS</span> array)) <span style="color:#66d9ef">USING</span> (cohort,
+                                                                                                                                                                                                                               <span style="color:#66d9ef">DAY</span>))
+   <span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> cohort)
+</code></pre></div><p>Фух, мы это сделали. Простой прогноз который можно засунуть в BI. Данный метод не претендует на супер точность, уникальность и вот это все. Это один из способов решить небольшую проблему, просто, для того чтобы выиграть время и сделать качественную модель прогнозирования.</p>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+  <footer>
+    
+      
+    
+      
+        <ul class="Tags">
+          
+            <li class="Tags-item u-background">
+              <a class="Tags-link u-clickable" href="/blog/tags/clickhouse/" rel="tag">ClickHouse</a>
+            </li>
+          
+            <li class="Tags-item u-background">
+              <a class="Tags-link u-clickable" href="/blog/tags/sql/" rel="tag">SQL</a>
+            </li>
+          
+        </ul>
+      
+    
+  </footer>
+
+    </article>
+    
+      <div class="Divider"></div>
+    
+  
+
+  
+
+
+
+
+      </div>
+    </div>
+  </main>
+  
+  <footer class="Footer">
+    <div class="u-wrapper">
+      <div class="u-padding">
+        <a href="https://www.youtube.com/playlist?list=PLt_re4pYVwLBySKW7iECIB3-wxhI7mzA-">|̲̅̅●̲̅̅|̲̅̅=̲̅̅|̲̅̅●̲̅̅</a>
+      </div>
+    </div>
+  </footer>
 
 </body>
 
