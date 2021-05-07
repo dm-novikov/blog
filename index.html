@@ -50,6 +50,12 @@
     
     
     
+    
+    
+  
+    
+    
+    
       
       
     
@@ -120,6 +126,429 @@
 
   
 
+  
+    <article>
+      <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="/blog/post/airflow_start/" rel="bookmark">Dev: Деплой и работа с Airflow</a>
+  </h2>
+  
+    <time datetime="2021-05-06T22:18:19&#43;03:00">6 May, 2021</time>
+  
+</header>
+      
+        <h2 id="что-будем-делать">Что будем делать?</h2>
+<p>По шагам</p>
+<ul>
+<li>Напишем образ Airflow</li>
+<li>Настроим WSL2</li>
+<li>Напишем сценарий Ansible</li>
+<li>Напишем маленький DAG</li>
+</ul>
+<p>Будем использовать простую установку Airflow, LocalExecutor, где как бекенд Postgres база, такая версия вполне подойдет для небольших команд до ~100-300 дагов.</p>
+<p><img src="/blog/images/airflow_deploy.png" alt="as"></p>
+<h2 id="пишем-образ-или-берем-готовый">Пишем образ или берем готовый</h2>
+<p>Первым делом нам нужно написать докер образ нашего Airflow, я предлагаю взять готовый вариант <a href="https://github.com/puckel/docker-airflow">тут</a>, для своих задач я переписал этот образ, куда включил дополнительные функции.</p>
+<ul>
+<li>airflow_dev/
+<ul>
+<li>script/
+<ul>
+<li>create_user.py</li>
+<li>entrypoint.sh</li>
+</ul>
+</li>
+<li>Dockerfile</li>
+<li>docker-compose.yml</li>
+</ul>
+</li>
+</ul>
+<p><em><strong>create_user.py</strong></em></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> airflow
+<span style="color:#f92672">from</span> airflow <span style="color:#f92672">import</span> models, settings
+<span style="color:#f92672">from</span> airflow.contrib.auth.backends.password_auth <span style="color:#f92672">import</span> PasswordUser
+<span style="color:#f92672">from</span> sqlalchemy <span style="color:#f92672">import</span> create_engine
+<span style="color:#f92672">from</span> os <span style="color:#f92672">import</span> getenv
+
+AIRFLOW_ADMIN_USER <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74">&#39;AIRFLOW_ADMIN_USER&#39;</span>)
+AIRFLOW_ADMIN_PASSWORD <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74">&#39;AIRFLOW_ADMIN_PASSWORD&#39;</span>)
+AIRFLOW_ADMIN_EMAIL <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74">&#39;AIRFLOW_ADMIN_HOST&#39;</span>)
+POSTGRES <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74">&#39;AIRFLOW__CORE__SQL_ALCHEMY_CONN&#39;</span>)
+
+user <span style="color:#f92672">=</span> PasswordUser(models<span style="color:#f92672">.</span>User())
+user<span style="color:#f92672">.</span>username <span style="color:#f92672">=</span> AIRFLOW_ADMIN_USER
+user<span style="color:#f92672">.</span>email <span style="color:#f92672">=</span> AIRFLOW_ADMIN_EMAIL
+user<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> AIRFLOW_ADMIN_PASSWORD
+user<span style="color:#f92672">.</span>superuser <span style="color:#f92672">=</span> True
+
+engine <span style="color:#f92672">=</span> create_engine(POSTGRES)
+session <span style="color:#f92672">=</span> settings<span style="color:#f92672">.</span>Session(bind<span style="color:#f92672">=</span>engine)
+session<span style="color:#f92672">.</span>add(user)
+session<span style="color:#f92672">.</span>commit()
+session<span style="color:#f92672">.</span>close()
+exit()
+</code></pre></div><p><em><strong>entrypoint.sh</strong></em></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/usr/bin/env bash
+</span><span style="color:#75715e"></span>
+TRY_LOOP<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;20&#34;</span>
+
+<span style="color:#75715e"># Global defaults and back-compat</span>
+: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>AIRFLOW_HOME:=<span style="color:#e6db74">&#34;/usr/local/airflow&#34;</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>AIRFLOW__CORE__LOAD_EXAMPLES:=<span style="color:#e6db74">&#34;False&#34;</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+
+<span style="color:#75715e">#Global AIRFLOW мфкы</span>
+export <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  AIRFLOW_HOME <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  AIRFLOW__CORE__EXECUTOR <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  AIRFLOW__CORE__FERNET_KEY <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  AIRFLOW__CORE__LOAD_EXAMPLES <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>
+
+wait_for_port<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+  local name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$1<span style="color:#e6db74">&#34;</span> host<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$2<span style="color:#e6db74">&#34;</span> port<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$3<span style="color:#e6db74">&#34;</span>
+  local j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+  <span style="color:#66d9ef">while</span> ! nc -z <span style="color:#e6db74">&#34;</span>$host<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span>$port<span style="color:#e6db74">&#34;</span> &gt;/dev/null 2&gt;&amp;<span style="color:#ae81ff">1</span> &lt; /dev/null; <span style="color:#66d9ef">do</span>
+    j<span style="color:#f92672">=</span><span style="color:#66d9ef">$((</span>j+1<span style="color:#66d9ef">))</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> $j -ge $TRY_LOOP <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+      echo &gt;&amp;<span style="color:#ae81ff">2</span> <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>date<span style="color:#66d9ef">)</span><span style="color:#e6db74"> - </span>$host<span style="color:#e6db74">:</span>$port<span style="color:#e6db74"> still not reachable, giving up&#34;</span>
+      exit <span style="color:#ae81ff">1</span>
+    <span style="color:#66d9ef">fi</span>
+    echo <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>date<span style="color:#66d9ef">)</span><span style="color:#e6db74"> - waiting for </span>$name<span style="color:#e6db74">... </span>$j<span style="color:#e6db74">/</span>$TRY_LOOP<span style="color:#e6db74">&#34;</span>
+    sleep <span style="color:#ae81ff">5</span>
+  <span style="color:#66d9ef">done</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#75715e"># Global PG vars</span>
+export <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_HOST <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_PORT <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_USER <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_PASSWORD <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_DB <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  POSTGRES_EXTRAS <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>
+<span style="color:#75715e"># PG connection</span>
+AIRFLOW__CORE__SQL_ALCHEMY_CONN<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;postgresql+psycopg2://</span><span style="color:#e6db74">${</span>POSTGRES_USER<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">${</span>POSTGRES_PASSWORD<span style="color:#e6db74">}</span><span style="color:#e6db74">@</span><span style="color:#e6db74">${</span>POSTGRES_HOST<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">${</span>POSTGRES_PORT<span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">${</span>POSTGRES_DB<span style="color:#e6db74">}${</span>POSTGRES_EXTRAS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+export AIRFLOW__CORE__SQL_ALCHEMY_CONN
+
+<span style="color:#75715e"># Derive useful variables from the AIRFLOW__ variables provided explicitly by the user</span>
+POSTGRES_ENDPOINT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo -n <span style="color:#e6db74">&#34;</span>$AIRFLOW__CORE__SQL_ALCHEMY_CONN<span style="color:#e6db74">&#34;</span> | cut -d <span style="color:#e6db74">&#39;/&#39;</span> -f3 | sed -e <span style="color:#e6db74">&#39;s,.*@,,&#39;</span><span style="color:#66d9ef">)</span>
+POSTGRES_HOST<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo -n <span style="color:#e6db74">&#34;</span>$POSTGRES_ENDPOINT<span style="color:#e6db74">&#34;</span> | cut -d <span style="color:#e6db74">&#39;:&#39;</span> -f1<span style="color:#66d9ef">)</span>
+POSTGRES_PORT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo -n <span style="color:#e6db74">&#34;</span>$POSTGRES_ENDPOINT<span style="color:#e6db74">&#34;</span> | cut -d <span style="color:#e6db74">&#39;:&#39;</span> -f2<span style="color:#66d9ef">)</span>
+
+wait_for_port <span style="color:#e6db74">&#34;Postgres&#34;</span> <span style="color:#e6db74">&#34;</span>$POSTGRES_HOST<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span>$POSTGRES_PORT<span style="color:#e6db74">&#34;</span>
+
+
+<span style="color:#75715e"># Init database</span>
+airflow initdb
+
+<span style="color:#75715e"># Create `Admin` user</span>
+python /create_user.py 
+
+<span style="color:#75715e"># Run worker and scheduler</span>
+airflow scheduler &amp;
+exec airflow webserver
+</code></pre></div><p><em><strong>Dockerfile</strong></em></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># VERSION 1.10.9</span>
+
+FROM python:3.7-slim-buster
+<span style="color:#75715e"># Never prompt the user for choices on installation/configuration of packages</span>
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM linux
+<span style="color:#75715e"># Airflow</span>
+ARG AIRFLOW_VERSION<span style="color:#f92672">=</span>1.10.9
+ARG AIRFLOW_USER_HOME<span style="color:#f92672">=</span>/usr/local/airflow
+ARG AIRFLOW_DEPS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>
+ARG PYTHON_DEPS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>
+ENV AIRFLOW_HOME<span style="color:#f92672">=</span><span style="color:#e6db74">${</span>AIRFLOW_USER_HOME<span style="color:#e6db74">}</span>
+<span style="color:#75715e"># Define en_US.</span>
+ENV LANGUAGE en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+ENV LC_CTYPE en_US.UTF-8
+ENV LC_MESSAGES en_US.UTF-8
+<span style="color:#75715e"># Disable noisy &#34;Handling signal&#34; log messages:</span>
+<span style="color:#75715e"># ENV GUNICORN_CMD_ARGS --log-level WARNING</span>
+RUN set -ex <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> buildDeps<span style="color:#f92672">=</span><span style="color:#e6db74">&#39; \
+</span><span style="color:#e6db74">        freetds-dev \
+</span><span style="color:#e6db74">        libkrb5-dev \
+</span><span style="color:#e6db74">        libsasl2-dev \
+</span><span style="color:#e6db74">        libssl-dev \
+</span><span style="color:#e6db74">        libffi-dev \
+</span><span style="color:#e6db74">        libpq-dev \
+</span><span style="color:#e6db74">        git \
+</span><span style="color:#e6db74">    &#39;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get update -yqq <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get upgrade -yqq <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get install -yqq --no-install-recommends <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        $buildDeps <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        freetds-bin <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        build-essential <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        default-libmysqlclient-dev <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        apt-utils <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        curl <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        rsync <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        netcat <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        locales <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> sed -i <span style="color:#e6db74">&#39;s/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g&#39;</span> /etc/locale.gen <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> locale-gen <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> update-locale LANG<span style="color:#f92672">=</span>en_US.UTF-8 LC_ALL<span style="color:#f92672">=</span>en_US.UTF-8 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> useradd -ms /bin/bash -d <span style="color:#e6db74">${</span>AIRFLOW_USER_HOME<span style="color:#e6db74">}</span> airflow <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install -U pip setuptools wheel <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install pytz <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install pyOpenSSL <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install ndg-httpsclient <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install pyasn1 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install apache-airflow<span style="color:#f92672">[</span>celery,slack,postgres,hive,jdbc,mysql,mssql,ssh,virtualenv<span style="color:#e6db74">${</span>AIRFLOW_DEPS:+,<span style="color:#e6db74">}${</span>AIRFLOW_DEPS<span style="color:#e6db74">}</span><span style="color:#f92672">]==</span><span style="color:#e6db74">${</span>AIRFLOW_VERSION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install <span style="color:#e6db74">&#39;redis==3.2&#39;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#75715e"># Upgrade SQLAlchemy</span>
+    <span style="color:#f92672">&amp;&amp;</span> pip uninstall -y SQLAlchemy <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> pip install <span style="color:#e6db74">&#39;SQLAlchemy==1.3.15&#39;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#75715e"># For AUTH</span>
+    <span style="color:#f92672">&amp;&amp;</span> pip install flask_bcrypt <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#75715e"># Yours packages</span>
+    <span style="color:#f92672">&amp;&amp;</span> pip install clickhouse_driver <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#75715e">##</span>
+    <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> -n <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>PYTHON_DEPS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span> pip install <span style="color:#e6db74">${</span>PYTHON_DEPS<span style="color:#e6db74">}</span>; <span style="color:#66d9ef">fi</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get purge --auto-remove -yqq $buildDeps <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -yqq --purge <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> apt-get clean <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    <span style="color:#f92672">&amp;&amp;</span> rm -rf <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /var/lib/apt/lists/* <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /tmp/* <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /var/tmp/* <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /usr/share/man <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /usr/share/doc <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        /usr/share/doc-base
+
+COPY script/entrypoint.sh /entrypoint.sh
+COPY script/create_user.py /create_user.py
+
+COPY config/airflow.cfg <span style="color:#e6db74">${</span>AIRFLOW_USER_HOME<span style="color:#e6db74">}</span>/airflow.cfg
+
+RUN chown -R airflow: <span style="color:#e6db74">${</span>AIRFLOW_USER_HOME<span style="color:#e6db74">}</span>
+
+
+EXPOSE <span style="color:#ae81ff">8080</span> <span style="color:#ae81ff">5555</span> <span style="color:#ae81ff">8793</span>
+
+USER airflow
+WORKDIR <span style="color:#e6db74">${</span>AIRFLOW_USER_HOME<span style="color:#e6db74">}</span>
+ENTRYPOINT <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;/entrypoint.sh&#34;</span><span style="color:#f92672">]</span>
+CMD <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;webserver&#34;</span><span style="color:#f92672">]</span>
+</code></pre></div><p><em><strong>docker-compose.yml</strong></em></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">version: <span style="color:#e6db74">&#39;3.7&#39;</span>
+services:
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER<span style="color:#f92672">=</span>airflow
+            - POSTGRES_PASSWORD<span style="color:#f92672">=</span>airflow
+            - POSTGRES_DB<span style="color:#f92672">=</span>airflow
+        logging:
+            options:
+                max-size: 10m
+                max-file: <span style="color:#e6db74">&#34;3&#34;</span>
+
+    webserver:
+        image: airflow_local
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - AIRFLOW__CORE__EXECUTOR<span style="color:#f92672">=</span>LocalExecutor
+            - AIRFLOW__CORE__FERNET_KEY<span style="color:#f92672">=</span>Ri6k4AsPpIhyXSxhEzhdY_W1oEF9BblkMbfeRLM7GWg<span style="color:#f92672">=</span> <span style="color:#75715e"># your fernet</span>
+            - AIRFLOW_ADMIN_USER<span style="color:#f92672">=</span>admin <span style="color:#75715e"># your user</span>
+            - AIRFLOW_ADMIN_PASSWORD<span style="color:#f92672">=</span><span style="color:#ae81ff">12345</span> <span style="color:#75715e"># your pass</span>
+            - POSTGRES_HOST<span style="color:#f92672">=</span>postgres
+            - POSTGRES_PORT<span style="color:#f92672">=</span><span style="color:#ae81ff">5432</span> <span style="color:#75715e"># your port</span>
+            - POSTGRES_USER<span style="color:#f92672">=</span>airflow <span style="color:#75715e"># your user</span>
+            - POSTGRES_PASSWORD<span style="color:#f92672">=</span>airflow <span style="color:#75715e"># your pass</span>
+            - POSTGRES_DB<span style="color:#f92672">=</span>airflow <span style="color:#75715e"># your db</span>
+            - PYTHONPATH<span style="color:#f92672">=</span>/usr/local/airflow/plugins
+        logging:
+            options:
+                max-size: 10m
+                max-file: <span style="color:#e6db74">&#34;3&#34;</span>
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+        ports:
+            - <span style="color:#e6db74">&#34;8080:8080&#34;</span>
+        command: webserver 
+        healthcheck:
+            test: <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;CMD-SHELL&#34;</span>, <span style="color:#e6db74">&#34;[ -f /usr/local/airflow/airflow-webserver.pid ]&#34;</span><span style="color:#f92672">]</span>
+            interval: 30s
+            timeout: 30s
+            retries: <span style="color:#ae81ff">3</span>
+</code></pre></div><h2 id="настраиваем-wsl">Настраиваем WSL</h2>
+<p>Если вы пользуетесь Windows, то вам обязательно нужно поставить WSL2, по факту это просто Linux который доступен из Windows, очень удобно. Я оставлю только инструкцию и пару статей которые помогли мне разобраться с ssh для WSL. <a href="https://docs.microsoft.com/ru-ru/windows/wsl/install-win10">Настройка WSL</a>. <a href="https://www.hanselman.com/blog/how-to-ssh-into-wsl2-on-windows-10-from-an-external-machine">Настройка SSH</a>.</p>
+<p>В целом здесь всё просто, и всё может пойти не так одновременно :) Если что то не получается, сносите и пробуйте снова, это сбережет вам нервы.</p>
+<p>Теперь можно запустить сборку вашего окружения, сделаем это просто руками.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo docker build -t airflow:latest .
+sudo docker-compose -f docker-compose.yml up -d
+
+<span style="color:#75715e"># Push your image to DockerHub</span>
+sudo docker push YOUR_ACCOUNT/airflow:latest
+</code></pre></div><h2 id="установка-ansible-и-деплой-airflow">Установка Ansible и деплой Airflow</h2>
+<p>У Ansible отличная документация с примерами, <a href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu">установка на Ubuntu</a>. Куда устанавливать? На самом деле можно это сделать хоть на ваш WSL, хоть на любую другую машину, мы пропишем затем в конфигах хосты чтобы ходить на нужную нам машинку.</p>
+<p>Пишем плейбук для установки Airflow и Postgres.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">---
+- hosts: localhost
+
+  tasks:
+  
+  - name: check Postgres container
+    docker_container:
+      name: <span style="color:#e6db74">&#34;postgres&#34;</span>
+      state: started
+      restart: <span style="color:#e6db74">&#34;yes&#34;</span>
+      ulimits: <span style="color:#e6db74">&#34;nofile:262144:262144&#34;</span>
+      image: <span style="color:#e6db74">&#34;postgres:12.6-alpine&#34;</span>
+      env:
+        POSTGRES_PASSWORD: <span style="color:#e6db74">&#34;airflow&#34;</span> <span style="color:#75715e"># your pass</span>
+        POSTGRES_DB: <span style="color:#e6db74">&#34;airflow&#34;</span> <span style="color:#75715e"># your db</span>
+      ports:
+        - <span style="color:#e6db74">&#34;5432:5432&#34;</span>
+
+  - name: airflow clone dags
+    ansible.builtin.git:
+      repo: <span style="color:#e6db74">&#34;https://github.com/dm-novikov/dags.git&#34;</span> <span style="color:#75715e"># your repa</span>
+      dest: <span style="color:#e6db74">&#34;./dev/dags&#34;</span> <span style="color:#75715e"># your dir</span>
+      update: yes
+      force: yes
+    ignore_errors: yes
+
+  - name: change file owner
+    file:
+      dest: <span style="color:#e6db74">&#34;/home/dnovikov/ansible/&#34;</span> <span style="color:#75715e"># your dir</span>
+      owner: <span style="color:#ae81ff">1000</span> <span style="color:#75715e"># your owner</span>
+      mode: <span style="color:#ae81ff">0777</span>
+      recurse: yes
+
+  - name: check Airflow
+    docker_container:
+      name: <span style="color:#e6db74">&#34;airflow&#34;</span>
+      state: started
+      restart: <span style="color:#e6db74">&#34;yes&#34;</span>
+      ulimits: <span style="color:#e6db74">&#34;nofile:262144:262144&#34;</span>
+      volumes: <span style="color:#e6db74">&#34;./dev/dags:/usr/local/airflow/dev/dags&#34;</span> <span style="color:#75715e"># your volumes</span>
+      image: <span style="color:#e6db74">&#34;YOUR_ACCOUNT/airflow:latest&#34;</span> <span style="color:#75715e"># your image</span>
+      ports:
+        - <span style="color:#e6db74">&#34;8080:8080&#34;</span>
+      command: <span style="color:#e6db74">&#34;webserver&#34;</span>
+      env:
+        AIRFLOW__CORE__EXECUTOR: <span style="color:#e6db74">&#34;LocalExecutor&#34;</span>
+        AIRFLOW_ADMIN_USER: <span style="color:#e6db74">&#34;admin&#34;</span> <span style="color:#75715e"># your user</span>
+        AIRFLOW_ADMIN_PASSWORD: <span style="color:#e6db74">&#34;12345&#34;</span> <span style="color:#75715e"># your pass</span>
+        AIRFLOW__CORE__FERNET_KEY: <span style="color:#e6db74">&#34;Ri6k4AsPpIhyXSxhEzhdY_W1oEF9BblkMbfeRLM7GWg=&#34;</span> <span style="color:#75715e"># your fernet key</span>
+        AIRFLOW__CORE__DAGS_FOLDER: <span style="color:#e6db74">&#34;/usr/local/airflow/dev/dags&#34;</span>
+        AIRFLOW__CORE__DAGS_PLUGINS: <span style="color:#e6db74">&#34;/usr/local/airflow/dev/plugins&#34;</span>
+        AIRFLOW__WEBSERVER__AUTHENTICATE: <span style="color:#e6db74">&#34;True&#34;</span>
+        AIRFLOW__WEBSERVER__AUTH_BACKEND: <span style="color:#e6db74">&#34;airflow.contrib.auth.backends.password_auth&#34;</span>
+        POSTGRES_HOST: <span style="color:#e6db74">&#34;10.128.0.28&#34;</span> <span style="color:#75715e"># your host</span>
+        POSTGRES_PORT: <span style="color:#e6db74">&#34;5432&#34;</span> <span style="color:#75715e"># your port</span>
+        POSTGRES_USER: <span style="color:#e6db74">&#34;postgres&#34;</span> <span style="color:#75715e"># your user</span>
+        POSTGRES_PASSWORD: <span style="color:#e6db74">&#34;airflow&#34;</span> <span style="color:#75715e"># your pass</span>
+        POSTGRES_DB: <span style="color:#e6db74">&#34;airflow&#34;</span> <span style="color:#75715e"># your db</span>
+        PYTHONPATH: <span style="color:#e6db74">&#34;/usr/local/airflow/dev/plugins&#34;</span>
+</code></pre></div><p>Если всё отработало верно то вы получите такую картинку</p>
+<p><img src="/blog/images/airflow.png" alt="as"></p>
+<p>Теперь мы умеем копировать наши даги через гит, осталось только собрать всё воедино.</p>
+<h2 id="пишем-простой-dag">Пишем простой DAG</h2>
+<p>Этот даг рабочий и он умеет выгружать курс валют центробанка.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> airflow <span style="color:#f92672">import</span> DAG
+<span style="color:#f92672">from</span> airflow.operators.python_operator <span style="color:#f92672">import</span> PythonOperator
+
+<span style="color:#f92672">import</span> xml.etree.ElementTree <span style="color:#f92672">as</span> ET
+<span style="color:#f92672">from</span> datetime <span style="color:#f92672">import</span> datetime, timedelta
+<span style="color:#f92672">import</span> requests <span style="color:#f92672">as</span> req
+<span style="color:#f92672">import</span> pandas <span style="color:#f92672">as</span> pd
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">date_transform</span>(date):
+    dt <span style="color:#f92672">=</span> date<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;-&#39;</span>)
+    <span style="color:#66d9ef">return</span> f<span style="color:#e6db74">&#39;{dt[2]}/{dt[1]}/{dt[0]}&#39;</span>
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">download_xml_file</span>(tmp_file, <span style="color:#f92672">**</span>kwargs) <span style="color:#f92672">-&gt;</span> None:
+    url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;http://www.cbr.ru/scripts/XML_daily.asp&#39;</span>
+    date <span style="color:#f92672">=</span> kwargs[<span style="color:#e6db74">&#39;yesterday_ds&#39;</span>]
+
+    request <span style="color:#f92672">=</span> req<span style="color:#f92672">.</span>get(f<span style="color:#e6db74">&#39;{url}?date_req={date_transform(date)}&#39;</span>)
+
+    <span style="color:#66d9ef">with</span> open(f<span style="color:#e6db74">&#39;{tmp_file}&#39;</span>, <span style="color:#e6db74">&#39;w&#39;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>) <span style="color:#66d9ef">as</span> tmp_file:
+        tmp_file<span style="color:#f92672">.</span>write(request<span style="color:#f92672">.</span>text)
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">transform_xml_file</span>(tmp_file, csv_file, <span style="color:#f92672">**</span>kwargs) <span style="color:#f92672">-&gt;</span> None:
+    rows <span style="color:#f92672">=</span> list()
+    parser <span style="color:#f92672">=</span> ET<span style="color:#f92672">.</span>XMLParser(encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;utf-8&#34;</span>)
+    df_cols <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;num_code&#39;</span>, <span style="color:#e6db74">&#39;char_code&#39;</span>, <span style="color:#e6db74">&#39;nominal&#39;</span>,
+               <span style="color:#e6db74">&#39;name&#39;</span>, <span style="color:#e6db74">&#39;value&#39;</span>, <span style="color:#e6db74">&#39;date&#39;</span>]
+    date <span style="color:#f92672">=</span> datetime<span style="color:#f92672">.</span>strptime(kwargs[<span style="color:#e6db74">&#39;yesterday_ds&#39;</span>],
+                             <span style="color:#e6db74">&#39;%Y-%m-</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#39;</span>)
+
+    tree <span style="color:#f92672">=</span> ET<span style="color:#f92672">.</span>parse(tmp_file, parser<span style="color:#f92672">=</span>parser)<span style="color:#f92672">.</span>getroot()
+
+    <span style="color:#66d9ef">for</span> child <span style="color:#f92672">in</span> tree<span style="color:#f92672">.</span>findall(<span style="color:#e6db74">&#39;Valute&#39;</span>):
+        num_code <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span>find(<span style="color:#e6db74">&#39;NumCode&#39;</span>)<span style="color:#f92672">.</span>text
+        char_code <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span>find(<span style="color:#e6db74">&#39;CharCode&#39;</span>)<span style="color:#f92672">.</span>text
+        nominal <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span>find(<span style="color:#e6db74">&#39;Nominal&#39;</span>)<span style="color:#f92672">.</span>text
+        name <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span>find(<span style="color:#e6db74">&#39;Name&#39;</span>)<span style="color:#f92672">.</span>text
+        value <span style="color:#f92672">=</span> float(child<span style="color:#f92672">.</span>find(<span style="color:#e6db74">&#39;Value&#39;</span>)<span style="color:#f92672">.</span>text<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#39;,&#39;</span>, <span style="color:#e6db74">&#39;.&#39;</span>))
+
+        rows<span style="color:#f92672">.</span>append((num_code, char_code, nominal,
+                     name, value, date))
+
+    out_df <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>DataFrame(rows, columns<span style="color:#f92672">=</span>df_cols)
+    out_df<span style="color:#f92672">.</span>to_csv(csv_file, sep<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;,&#34;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>)
+
+
+default_args <span style="color:#f92672">=</span> {
+    <span style="color:#e6db74">&#39;retries&#39;</span>: <span style="color:#ae81ff">1</span>,
+    <span style="color:#e6db74">&#39;retry_delay&#39;</span>: timedelta(minutes<span style="color:#f92672">=</span><span style="color:#ae81ff">180</span>)
+    }
+
+<span style="color:#66d9ef">with</span> DAG(<span style="color:#e6db74">&#39;finance_centrobank&#39;</span>,
+         start_date<span style="color:#f92672">=</span>datetime(<span style="color:#ae81ff">2021</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">6</span>),
+         max_active_runs<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,
+         schedule_interval<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0 6 * * *&#34;</span>,
+         default_args<span style="color:#f92672">=</span>default_args,) <span style="color:#66d9ef">as</span> dag:
+
+    PythonOperator(
+        task_id<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;download_xml_file&#34;</span>,
+        python_callable<span style="color:#f92672">=</span>download_xml_file,
+        provide_context<span style="color:#f92672">=</span>True,
+        op_kwargs<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;tmp_file&#39;</span>: <span style="color:#e6db74">&#39;/tmp/file.xml&#39;</span>},
+        dag<span style="color:#f92672">=</span>dag,
+    ) <span style="color:#f92672">&gt;&gt;</span> PythonOperator(
+        task_id<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;transform_xml_file&#34;</span>,
+        python_callable<span style="color:#f92672">=</span>transform_xml_file,
+        provide_context<span style="color:#f92672">=</span>True,
+        op_kwargs<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;tmp_file&#39;</span>: <span style="color:#e6db74">&#39;/tmp/file.xml&#39;</span>,
+                   <span style="color:#e6db74">&#39;csv_file&#39;</span>: <span style="color:#e6db74">&#39;/usr/local/airflow/dags/file.csv&#39;</span>},
+        dag<span style="color:#f92672">=</span>dag,
+    )
+</code></pre></div><h2 id="собираем-всё-воедино">Собираем всё воедино</h2>
+<p>Итак что у нас уже есть, WSL2 где мы запустили наш контейнер для работы с Airflow, образ Airflow для работы, простой (конечно для реальной работы его стоит модернизировать, раскидать всё по файлам и использовать vault для безопасности) Ansible сценарий который умеет копировать репозиторий и помещать в папочку /dags. В целом это всё.</p>
+<p>Как я работаю с этим всем, у меня есть папка на локальной машине, где лежат даги и плагины, дополнительно полная копия прод окружения на WSL2, между этими двуммя системами я перекидываю файлы с помощью ssh, PyCharm для этого весьма удобен, то есть пишу код в проекте на виндовс отправляю его на WSL2, смотрю как он отрабатывает, если всё хорошо то можно комитить код в репозиторий, где с помощю CI/CD запускается Ansible сценарий и копирует содержимое репозитория на прод сервер. Схема простая, но рабочая. Все комиты идут через пулл реквест.</p>
+
+      
+      
+
+
+  
+
+  
+
+
+
+
+
+    </article>
+    
+      <div class="Divider"></div>
+    
   
     <article>
       <header class="Heading">
@@ -768,7 +1197,7 @@ services:
     <article>
       <header class="Heading">
   <h2 class="Heading-title">
-    <a class="Heading-link u-clickable" href="/blog/post/pandas_for_everyone/" rel="bookmark">Python: Оптимизация работы с Pandas</a>
+    <a class="Heading-link u-clickable" href="/blog/post/pandas_for_everyone/" rel="bookmark">Python: Оптимизация работы с Пандас</a>
   </h2>
   
     <time datetime="2020-06-21T20:54:03&#43;03:00">21 June, 2020</time>

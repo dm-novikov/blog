@@ -6,8 +6,410 @@
     <link>https://dm-novikov.github.io/blog/post/</link>
     <description>Recent content in Posts on Dmitriy Novikov</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Tue, 03 Nov 2020 22:18:19 +0300</lastBuildDate>
+    <lastBuildDate>Thu, 06 May 2021 22:18:19 +0300</lastBuildDate>
     <atom:link href="https://dm-novikov.github.io/blog/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Dev: Деплой и работа с Airflow</title>
+      <link>https://dm-novikov.github.io/blog/post/airflow_start/</link>
+      <pubDate>Thu, 06 May 2021 22:18:19 +0300</pubDate>
+      <guid>https://dm-novikov.github.io/blog/post/airflow_start/</guid>
+      <description>&lt;h2 id=&#34;что-будем-делать&#34;&gt;Что будем делать?&lt;/h2&gt;
+&lt;p&gt;По шагам&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Напишем образ Airflow&lt;/li&gt;
+&lt;li&gt;Настроим WSL2&lt;/li&gt;
+&lt;li&gt;Напишем сценарий Ansible&lt;/li&gt;
+&lt;li&gt;Напишем маленький DAG&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Будем использовать простую установку Airflow, LocalExecutor, где как бекенд Postgres база, такая версия вполне подойдет для небольших команд до ~100-300 дагов.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/airflow_deploy.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;пишем-образ-или-берем-готовый&#34;&gt;Пишем образ или берем готовый&lt;/h2&gt;
+&lt;p&gt;Первым делом нам нужно написать докер образ нашего Airflow, я предлагаю взять готовый вариант &lt;a href=&#34;https://github.com/puckel/docker-airflow&#34;&gt;тут&lt;/a&gt;, для своих задач я переписал этот образ, куда включил дополнительные функции.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;airflow_dev/
+&lt;ul&gt;
+&lt;li&gt;script/
+&lt;ul&gt;
+&lt;li&gt;create_user.py&lt;/li&gt;
+&lt;li&gt;entrypoint.sh&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Dockerfile&lt;/li&gt;
+&lt;li&gt;docker-compose.yml&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;create_user.py&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; airflow
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; airflow &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; models, settings
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; airflow.contrib.auth.backends.password_auth &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; PasswordUser
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; sqlalchemy &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; create_engine
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; os &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; getenv
+
+AIRFLOW_ADMIN_USER &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getenv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;AIRFLOW_ADMIN_USER&amp;#39;&lt;/span&gt;)
+AIRFLOW_ADMIN_PASSWORD &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getenv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;AIRFLOW_ADMIN_PASSWORD&amp;#39;&lt;/span&gt;)
+AIRFLOW_ADMIN_EMAIL &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getenv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;AIRFLOW_ADMIN_HOST&amp;#39;&lt;/span&gt;)
+POSTGRES &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getenv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;AIRFLOW__CORE__SQL_ALCHEMY_CONN&amp;#39;&lt;/span&gt;)
+
+user &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PasswordUser(models&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;User())
+user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;username &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; AIRFLOW_ADMIN_USER
+user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;email &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; AIRFLOW_ADMIN_EMAIL
+user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;password &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; AIRFLOW_ADMIN_PASSWORD
+user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;superuser &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; True
+
+engine &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; create_engine(POSTGRES)
+session &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; settings&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Session(bind&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;engine)
+session&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add(user)
+session&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;commit()
+session&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;close()
+exit()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;&lt;strong&gt;entrypoint.sh&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/usr/bin/env bash
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+TRY_LOOP&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;20&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Global defaults and back-compat&lt;/span&gt;
+: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_HOME:=&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/usr/local/airflow&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW__CORE__LOAD_EXAMPLES:=&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;False&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;#Global AIRFLOW мфкы&lt;/span&gt;
+export &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  AIRFLOW_HOME &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  AIRFLOW__CORE__EXECUTOR &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  AIRFLOW__CORE__FERNET_KEY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  AIRFLOW__CORE__LOAD_EXAMPLES &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;
+
+wait_for_port&lt;span style=&#34;color:#f92672&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+  local name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$1&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; host&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$2&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; port&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$3&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+  local j&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; ! nc -z &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$host&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$port&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &amp;gt;/dev/null 2&amp;gt;&amp;amp;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &amp;lt; /dev/null; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt;
+    j&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$((&lt;/span&gt;j+1&lt;span style=&#34;color:#66d9ef&#34;&gt;))&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt; $j -ge $TRY_LOOP &lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;; &lt;span style=&#34;color:#66d9ef&#34;&gt;then&lt;/span&gt;
+      echo &amp;gt;&amp;amp;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;date&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; - &lt;/span&gt;$host&lt;span style=&#34;color:#e6db74&#34;&gt;:&lt;/span&gt;$port&lt;span style=&#34;color:#e6db74&#34;&gt; still not reachable, giving up&amp;#34;&lt;/span&gt;
+      exit &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;fi&lt;/span&gt;
+    echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;date&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; - waiting for &lt;/span&gt;$name&lt;span style=&#34;color:#e6db74&#34;&gt;... &lt;/span&gt;$j&lt;span style=&#34;color:#e6db74&#34;&gt;/&lt;/span&gt;$TRY_LOOP&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+    sleep &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Global PG vars&lt;/span&gt;
+export &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_HOST &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_PORT &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_USER &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_PASSWORD &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_DB &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  POSTGRES_EXTRAS &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# PG connection&lt;/span&gt;
+AIRFLOW__CORE__SQL_ALCHEMY_CONN&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;postgresql+psycopg2://&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;POSTGRES_USER&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;POSTGRES_PASSWORD&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;@&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;POSTGRES_HOST&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;POSTGRES_PORT&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;POSTGRES_DB&lt;span style=&#34;color:#e6db74&#34;&gt;}${&lt;/span&gt;POSTGRES_EXTRAS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+export AIRFLOW__CORE__SQL_ALCHEMY_CONN
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Derive useful variables from the AIRFLOW__ variables provided explicitly by the user&lt;/span&gt;
+POSTGRES_ENDPOINT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo -n &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$AIRFLOW__CORE__SQL_ALCHEMY_CONN&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | cut -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/&amp;#39;&lt;/span&gt; -f3 | sed -e &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;s,.*@,,&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+POSTGRES_HOST&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo -n &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$POSTGRES_ENDPOINT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | cut -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;:&amp;#39;&lt;/span&gt; -f1&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+POSTGRES_PORT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo -n &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$POSTGRES_ENDPOINT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | cut -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;:&amp;#39;&lt;/span&gt; -f2&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+
+wait_for_port &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Postgres&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$POSTGRES_HOST&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$POSTGRES_PORT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Init database&lt;/span&gt;
+airflow initdb
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Create `Admin` user&lt;/span&gt;
+python /create_user.py 
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Run worker and scheduler&lt;/span&gt;
+airflow scheduler &amp;amp;
+exec airflow webserver
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;&lt;strong&gt;Dockerfile&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# VERSION 1.10.9&lt;/span&gt;
+
+FROM python:3.7-slim-buster
+&lt;span style=&#34;color:#75715e&#34;&gt;# Never prompt the user for choices on installation/configuration of packages&lt;/span&gt;
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM linux
+&lt;span style=&#34;color:#75715e&#34;&gt;# Airflow&lt;/span&gt;
+ARG AIRFLOW_VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;1.10.9
+ARG AIRFLOW_USER_HOME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;/usr/local/airflow
+ARG AIRFLOW_DEPS&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+ARG PYTHON_DEPS&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+ENV AIRFLOW_HOME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_USER_HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# Define en_US.&lt;/span&gt;
+ENV LANGUAGE en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+ENV LC_CTYPE en_US.UTF-8
+ENV LC_MESSAGES en_US.UTF-8
+&lt;span style=&#34;color:#75715e&#34;&gt;# Disable noisy &amp;#34;Handling signal&amp;#34; log messages:&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# ENV GUNICORN_CMD_ARGS --log-level WARNING&lt;/span&gt;
+RUN set -ex &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; buildDeps&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39; \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        freetds-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        libkrb5-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        libsasl2-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        libssl-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        libffi-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        libpq-dev \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        git \
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get update -yqq &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get upgrade -yqq &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get install -yqq --no-install-recommends &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        $buildDeps &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        freetds-bin &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        build-essential &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        default-libmysqlclient-dev &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        apt-utils &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        curl &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        rsync &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        netcat &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        locales &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;s/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g&amp;#39;&lt;/span&gt; /etc/locale.gen &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; locale-gen &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; update-locale LANG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;en_US.UTF-8 LC_ALL&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;en_US.UTF-8 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; useradd -ms /bin/bash -d &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_USER_HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; airflow &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install -U pip setuptools wheel &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install pytz &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install pyOpenSSL &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install ndg-httpsclient &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install pyasn1 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install apache-airflow&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;celery,slack,postgres,hive,jdbc,mysql,mssql,ssh,virtualenv&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_DEPS:+,&lt;span style=&#34;color:#e6db74&#34;&gt;}${&lt;/span&gt;AIRFLOW_DEPS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]==&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;redis==3.2&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# Upgrade SQLAlchemy&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip uninstall -y SQLAlchemy &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;SQLAlchemy==1.3.15&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# For AUTH&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install flask_bcrypt &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# Yours packages&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; pip install clickhouse_driver &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;##&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt; -n &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;PYTHON_DEPS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;; &lt;span style=&#34;color:#66d9ef&#34;&gt;then&lt;/span&gt; pip install &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;PYTHON_DEPS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;; &lt;span style=&#34;color:#66d9ef&#34;&gt;fi&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get purge --auto-remove -yqq $buildDeps &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get autoremove -yqq --purge &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get clean &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; rm -rf &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /var/lib/apt/lists/* &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /tmp/* &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /var/tmp/* &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /usr/share/man &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /usr/share/doc &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        /usr/share/doc-base
+
+COPY script/entrypoint.sh /entrypoint.sh
+COPY script/create_user.py /create_user.py
+
+COPY config/airflow.cfg &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_USER_HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/airflow.cfg
+
+RUN chown -R airflow: &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_USER_HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+
+
+EXPOSE &lt;span style=&#34;color:#ae81ff&#34;&gt;8080&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5555&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8793&lt;/span&gt;
+
+USER airflow
+WORKDIR &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;AIRFLOW_USER_HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+ENTRYPOINT &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/entrypoint.sh&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+CMD &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;webserver&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;&lt;strong&gt;docker-compose.yml&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;version: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;3.7&amp;#39;&lt;/span&gt;
+services:
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow
+            - POSTGRES_PASSWORD&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow
+            - POSTGRES_DB&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow
+        logging:
+            options:
+                max-size: 10m
+                max-file: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;3&amp;#34;&lt;/span&gt;
+
+    webserver:
+        image: airflow_local
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - AIRFLOW__CORE__EXECUTOR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;LocalExecutor
+            - AIRFLOW__CORE__FERNET_KEY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;Ri6k4AsPpIhyXSxhEzhdY_W1oEF9BblkMbfeRLM7GWg&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your fernet&lt;/span&gt;
+            - AIRFLOW_ADMIN_USER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;admin &lt;span style=&#34;color:#75715e&#34;&gt;# your user&lt;/span&gt;
+            - AIRFLOW_ADMIN_PASSWORD&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;12345&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your pass&lt;/span&gt;
+            - POSTGRES_HOST&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;postgres
+            - POSTGRES_PORT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;5432&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your port&lt;/span&gt;
+            - POSTGRES_USER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow &lt;span style=&#34;color:#75715e&#34;&gt;# your user&lt;/span&gt;
+            - POSTGRES_PASSWORD&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow &lt;span style=&#34;color:#75715e&#34;&gt;# your pass&lt;/span&gt;
+            - POSTGRES_DB&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;airflow &lt;span style=&#34;color:#75715e&#34;&gt;# your db&lt;/span&gt;
+            - PYTHONPATH&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;/usr/local/airflow/plugins
+        logging:
+            options:
+                max-size: 10m
+                max-file: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;3&amp;#34;&lt;/span&gt;
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+        ports:
+            - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;8080:8080&amp;#34;&lt;/span&gt;
+        command: webserver 
+        healthcheck:
+            test: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;CMD-SHELL&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[ -f /usr/local/airflow/airflow-webserver.pid ]&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+            interval: 30s
+            timeout: 30s
+            retries: &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;настраиваем-wsl&#34;&gt;Настраиваем WSL&lt;/h2&gt;
+&lt;p&gt;Если вы пользуетесь Windows, то вам обязательно нужно поставить WSL2, по факту это просто Linux который доступен из Windows, очень удобно. Я оставлю только инструкцию и пару статей которые помогли мне разобраться с ssh для WSL. &lt;a href=&#34;https://docs.microsoft.com/ru-ru/windows/wsl/install-win10&#34;&gt;Настройка WSL&lt;/a&gt;. &lt;a href=&#34;https://www.hanselman.com/blog/how-to-ssh-into-wsl2-on-windows-10-from-an-external-machine&#34;&gt;Настройка SSH&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;В целом здесь всё просто, и всё может пойти не так одновременно :) Если что то не получается, сносите и пробуйте снова, это сбережет вам нервы.&lt;/p&gt;
+&lt;p&gt;Теперь можно запустить сборку вашего окружения, сделаем это просто руками.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo docker build -t airflow:latest .
+sudo docker-compose -f docker-compose.yml up -d
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Push your image to DockerHub&lt;/span&gt;
+sudo docker push YOUR_ACCOUNT/airflow:latest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;установка-ansible-и-деплой-airflow&#34;&gt;Установка Ansible и деплой Airflow&lt;/h2&gt;
+&lt;p&gt;У Ansible отличная документация с примерами, &lt;a href=&#34;https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu&#34;&gt;установка на Ubuntu&lt;/a&gt;. Куда устанавливать? На самом деле можно это сделать хоть на ваш WSL, хоть на любую другую машину, мы пропишем затем в конфигах хосты чтобы ходить на нужную нам машинку.&lt;/p&gt;
+&lt;p&gt;Пишем плейбук для установки Airflow и Postgres.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;---
+- hosts: localhost
+
+  tasks:
+  
+  - name: check Postgres container
+    docker_container:
+      name: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;postgres&amp;#34;&lt;/span&gt;
+      state: started
+      restart: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;yes&amp;#34;&lt;/span&gt;
+      ulimits: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nofile:262144:262144&amp;#34;&lt;/span&gt;
+      image: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;postgres:12.6-alpine&amp;#34;&lt;/span&gt;
+      env:
+        POSTGRES_PASSWORD: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your pass&lt;/span&gt;
+        POSTGRES_DB: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your db&lt;/span&gt;
+      ports:
+        - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;5432:5432&amp;#34;&lt;/span&gt;
+
+  - name: airflow clone dags
+    ansible.builtin.git:
+      repo: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;https://github.com/dm-novikov/dags.git&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your repa&lt;/span&gt;
+      dest: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;./dev/dags&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your dir&lt;/span&gt;
+      update: yes
+      force: yes
+    ignore_errors: yes
+
+  - name: change file owner
+    file:
+      dest: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/home/dnovikov/ansible/&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your dir&lt;/span&gt;
+      owner: &lt;span style=&#34;color:#ae81ff&#34;&gt;1000&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your owner&lt;/span&gt;
+      mode: &lt;span style=&#34;color:#ae81ff&#34;&gt;0777&lt;/span&gt;
+      recurse: yes
+
+  - name: check Airflow
+    docker_container:
+      name: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow&amp;#34;&lt;/span&gt;
+      state: started
+      restart: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;yes&amp;#34;&lt;/span&gt;
+      ulimits: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nofile:262144:262144&amp;#34;&lt;/span&gt;
+      volumes: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;./dev/dags:/usr/local/airflow/dev/dags&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your volumes&lt;/span&gt;
+      image: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;YOUR_ACCOUNT/airflow:latest&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your image&lt;/span&gt;
+      ports:
+        - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;8080:8080&amp;#34;&lt;/span&gt;
+      command: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;webserver&amp;#34;&lt;/span&gt;
+      env:
+        AIRFLOW__CORE__EXECUTOR: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;LocalExecutor&amp;#34;&lt;/span&gt;
+        AIRFLOW_ADMIN_USER: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;admin&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your user&lt;/span&gt;
+        AIRFLOW_ADMIN_PASSWORD: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;12345&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your pass&lt;/span&gt;
+        AIRFLOW__CORE__FERNET_KEY: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Ri6k4AsPpIhyXSxhEzhdY_W1oEF9BblkMbfeRLM7GWg=&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your fernet key&lt;/span&gt;
+        AIRFLOW__CORE__DAGS_FOLDER: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/usr/local/airflow/dev/dags&amp;#34;&lt;/span&gt;
+        AIRFLOW__CORE__DAGS_PLUGINS: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/usr/local/airflow/dev/plugins&amp;#34;&lt;/span&gt;
+        AIRFLOW__WEBSERVER__AUTHENTICATE: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;True&amp;#34;&lt;/span&gt;
+        AIRFLOW__WEBSERVER__AUTH_BACKEND: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow.contrib.auth.backends.password_auth&amp;#34;&lt;/span&gt;
+        POSTGRES_HOST: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;10.128.0.28&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your host&lt;/span&gt;
+        POSTGRES_PORT: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;5432&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your port&lt;/span&gt;
+        POSTGRES_USER: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;postgres&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your user&lt;/span&gt;
+        POSTGRES_PASSWORD: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your pass&lt;/span&gt;
+        POSTGRES_DB: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;airflow&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# your db&lt;/span&gt;
+        PYTHONPATH: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/usr/local/airflow/dev/plugins&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Если всё отработало верно то вы получите такую картинку&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dm-novikov.github.io/blog/blog/images/airflow.png&#34; alt=&#34;as&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Теперь мы умеем копировать наши даги через гит, осталось только собрать всё воедино.&lt;/p&gt;
+&lt;h2 id=&#34;пишем-простой-dag&#34;&gt;Пишем простой DAG&lt;/h2&gt;
+&lt;p&gt;Этот даг рабочий и он умеет выгружать курс валют центробанка.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; airflow &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; DAG
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; airflow.operators.python_operator &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; PythonOperator
+
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; xml.etree.ElementTree &lt;span style=&#34;color:#f92672&#34;&gt;as&lt;/span&gt; ET
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; datetime &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; datetime, timedelta
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; requests &lt;span style=&#34;color:#f92672&#34;&gt;as&lt;/span&gt; req
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; pandas &lt;span style=&#34;color:#f92672&#34;&gt;as&lt;/span&gt; pd
+
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;date_transform&lt;/span&gt;(date):
+    dt &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; date&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;split(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;-&amp;#39;&lt;/span&gt;)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; f&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{dt[2]}/{dt[1]}/{dt[0]}&amp;#39;&lt;/span&gt;
+
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;download_xml_file&lt;/span&gt;(tmp_file, &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;kwargs) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; None:
+    url &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;http://www.cbr.ru/scripts/XML_daily.asp&amp;#39;&lt;/span&gt;
+    date &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kwargs[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;yesterday_ds&amp;#39;&lt;/span&gt;]
+
+    request &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; req&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;get(f&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{url}?date_req={date_transform(date)}&amp;#39;&lt;/span&gt;)
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; open(f&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{tmp_file}&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;w&amp;#39;&lt;/span&gt;, encoding&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; tmp_file:
+        tmp_file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;write(request&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text)
+
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;transform_xml_file&lt;/span&gt;(tmp_file, csv_file, &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;kwargs) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; None:
+    rows &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; list()
+    parser &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ET&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;XMLParser(encoding&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;)
+    df_cols &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;num_code&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;char_code&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;nominal&amp;#39;&lt;/span&gt;,
+               &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;name&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;value&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;date&amp;#39;&lt;/span&gt;]
+    date &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; datetime&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;strptime(kwargs[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;yesterday_ds&amp;#39;&lt;/span&gt;],
+                             &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;%Y-%m-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;%d&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&lt;/span&gt;)
+
+    tree &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ET&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parse(tmp_file, parser&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;parser)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;getroot()
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; child &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; tree&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;findall(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Valute&amp;#39;&lt;/span&gt;):
+        num_code &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; child&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;find(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;NumCode&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text
+        char_code &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; child&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;find(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CharCode&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text
+        nominal &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; child&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;find(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Nominal&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text
+        name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; child&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;find(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Name&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text
+        value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; float(child&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;find(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Value&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;text&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;replace(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;,&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;.&amp;#39;&lt;/span&gt;))
+
+        rows&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append((num_code, char_code, nominal,
+                     name, value, date))
+
+    out_df &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;DataFrame(rows, columns&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;df_cols)
+    out_df&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;to_csv(csv_file, sep&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;,&amp;#34;&lt;/span&gt;, encoding&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;)
+
+
+default_args &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;retries&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;retry_delay&amp;#39;&lt;/span&gt;: timedelta(minutes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;180&lt;/span&gt;)
+    }
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; DAG(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;finance_centrobank&amp;#39;&lt;/span&gt;,
+         start_date&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;datetime(&lt;span style=&#34;color:#ae81ff&#34;&gt;2021&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;),
+         max_active_runs&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,
+         schedule_interval&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0 6 * * *&amp;#34;&lt;/span&gt;,
+         default_args&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;default_args,) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; dag:
+
+    PythonOperator(
+        task_id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;download_xml_file&amp;#34;&lt;/span&gt;,
+        python_callable&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;download_xml_file,
+        provide_context&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;True,
+        op_kwargs&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;{&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;tmp_file&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/tmp/file.xml&amp;#39;&lt;/span&gt;},
+        dag&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;dag,
+    ) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&amp;gt;&lt;/span&gt; PythonOperator(
+        task_id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;transform_xml_file&amp;#34;&lt;/span&gt;,
+        python_callable&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;transform_xml_file,
+        provide_context&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;True,
+        op_kwargs&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;{&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;tmp_file&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/tmp/file.xml&amp;#39;&lt;/span&gt;,
+                   &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;csv_file&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/usr/local/airflow/dags/file.csv&amp;#39;&lt;/span&gt;},
+        dag&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;dag,
+    )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;собираем-всё-воедино&#34;&gt;Собираем всё воедино&lt;/h2&gt;
+&lt;p&gt;Итак что у нас уже есть, WSL2 где мы запустили наш контейнер для работы с Airflow, образ Airflow для работы, простой (конечно для реальной работы его стоит модернизировать, раскидать всё по файлам и использовать vault для безопасности) Ansible сценарий который умеет копировать репозиторий и помещать в папочку /dags. В целом это всё.&lt;/p&gt;
+&lt;p&gt;Как я работаю с этим всем, у меня есть папка на локальной машине, где лежат даги и плагины, дополнительно полная копия прод окружения на WSL2, между этими двуммя системами я перекидываю файлы с помощью ssh, PyCharm для этого весьма удобен, то есть пишу код в проекте на виндовс отправляю его на WSL2, смотрю как он отрабатывает, если всё хорошо то можно комитить код в репозиторий, где с помощю CI/CD запускается Ansible сценарий и копирует содержимое репозитория на прод сервер. Схема простая, но рабочая. Все комиты идут через пулл реквест.&lt;/p&gt;
+</description>
+    </item>
     <item>
       <title>Dev: Кликстрим на коленке</title>
       <link>https://dm-novikov.github.io/blog/post/clickstream/</link>
@@ -611,7 +1013,7 @@ services:
 </description>
     </item>
     <item>
-      <title>Python: Оптимизация работы с Pandas</title>
+      <title>Python: Оптимизация работы с Пандас</title>
       <link>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</link>
       <pubDate>Sun, 21 Jun 2020 20:54:03 +0300</pubDate>
       <guid>https://dm-novikov.github.io/blog/post/pandas_for_everyone/</guid>
