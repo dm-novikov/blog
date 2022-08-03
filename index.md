@@ -1,4 +1,4 @@
 ---
-title: Blog
+title: Dmitriy Novikov
 layout: blog
 ---
