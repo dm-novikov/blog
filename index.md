@@ -1,37 +1,46 @@
-## Welcome to GitHub Pages
+---
+layout: default
+---
 
-You can use the [editor on GitHub](https://github.com/dm-novikov/blog.github.io/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+![Banner](assets/biscuit.png)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+**[Biscuit](http://sblisesivdin.github.io/biscuit)** is a single-page responsive Jekyll theme. This is the most simple and still-good-looking Jekyll theme that you can find. 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Usage
 
-```markdown
-Syntax highlighted code block
+You can use this theme with [Jekyll](http://jekyllrb.com/) or you can simply use it with [Github Pages](https://pages.github.com).
+For local usage just download [Jekyll](http://jekyllrb.com/), use installation guide for more. You can download latest Biscuit from [its Github repository](https://github.com/sblisesivdin/biscuit).
 
-# Header 1
-## Header 2
-### Header 3
+If you prefer to use Github Pages, you do not need to download it, upload files to a new repository...etc., just [fork](https://docs.github.com/en/get-starter/quickstart/fork-a-repo) and use it.
 
-- Bulleted
-- List
+### Files
 
-1. Numbered
-2. List
+* `_config.yml`            : Main configuration file.
+* `index.md`               : Website page (for now, this page).
+* `_includes/head.html`    : File to add custom code to `<head>` section.
+* `_includes/scripts.html` : File to add custom code before `</body>`. You can change footer at here.
+* `_sass` folder           : Related scss files can be found at this folder.
+* `css/main.csss`          : Main scss file.
+* `README.md`              : A simple readme file.
 
-**Bold** and _Italic_ and `Code` text
+## Example tag usage
 
-[Link](url) and ![Image](src)
-```
+## Header 1
+### Header 2
+#### Header 3
+**bold**
+*italic*
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+> blockquotes
 
-### Jekyll Themes
+~~~python
+import os,time
+print ("Biscuit")
+~~~
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/dm-novikov/blog.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+## Licence and Author Information
 
-### Support or Contact
+Biscuit is derived from currently deprecated theme [Solo](http://github.com/chibicode/solo). The development of Biscuit is maintained by [Sefer Bora Lisesivdin](https://lrgresearch.org/bora).
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Biscuit and the previous code where Biscuit is derived are distributed with [MIT license](https://github.com/sblisesivdin/biscuit/blob/gh-pages/LICENSE).
