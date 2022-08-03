@@ -1,4 +1,4 @@
 ---
 title: Dmitriy Novikov
-layout: Dmitriy Novikov
+layout: blog
 ---
