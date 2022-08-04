@@ -2,5 +2,6 @@ remote_theme: dm-novikov/jekyll-theme-serial-programmer
 
 title: Dmitriy Novikov
 markdown: kramdown
+baseurl: "/blog"
 
 
