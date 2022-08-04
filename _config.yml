@@ -1,2 +1,4 @@
 remote_theme: dm-novikov/jekyll-theme-serial-programmer
 
+title: Dmitriy Novikov
+baseurl: "/blog"
